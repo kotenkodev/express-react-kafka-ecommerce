@@ -105,6 +105,24 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      JWT_SECRET: ${JWT_SECRET}
+      AUTH_SERVICE_URL: http://auth-service:3006
+      ORDER_SERVICE_URL: http://order-service:3001
+      PRODUCT_SERVICE_URL: http://product-service:3007
+      SEARCH_SERVICE_URL: http://search-service:3005
+      ANALYTICS_SERVICE_URL: http://analytics-service:3004
+    depends_on:
+      - auth-service
+      - order-service
+      - product-service
 
 volumes:
   postgres_data:

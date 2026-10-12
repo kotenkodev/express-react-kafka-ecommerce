@@ -12,7 +12,10 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "src/config/validateEnv.ts",
+    "../api-gateway/src/middleware"
+  ],
   "exclude": ["node_modules", "dist"]
 }
-
