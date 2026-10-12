@@ -1,30 +1,36 @@
 import type { Request, Response } from "express";
 import { authService } from "../services/auth.service";
+import type { RegisterInput } from "../schemas/register.schema";
+import type { LoginInput } from "../schemas/login.schema";
+import type { RefreshTokenInput } from "../schemas/refresh-token.schema";
+import type { MeQuery } from "../schemas/me.schema";
 
 export class AuthController {
-  async register(req: Request, res: Response) {
-    const userId = req.headers["x-user-id"] as string;
-
-    const user = await authService.register({
-      userId,
-      email: req.body.email,
-      password: req.body.password,
-    });
+  async register(body: RegisterInput, _req: Request, res: Response) {
+    const user = await authService.register(body);
 
     res.status(201).json(user);
   }
 
-  async login(req: Request, res: Response) {
-    res.status(201).json("user");
+  async login(body: LoginInput, _req: Request, res: Response) {
+    const user = await authService.login(body);
+    res.status(201).json(user);
   }
-  async refresh(req: Request, res: Response) {
-    res.status(201).json("user");
+
+  async refresh(body: RefreshTokenInput, _req: Request, res: Response) {
+    const accessToken = await authService.refresh(body);
+    res.status(201).json({ token: accessToken });
   }
-  async logout(req: Request, res: Response) {
-    res.status(201).json("user");
+
+  async logout(body: RefreshTokenInput, _req: Request, res: Response) {
+    await authService.logout(body);
+    res.status(201).json({ message: "User logged out" });
   }
-  async me(req: Request, res: Response) {
-    res.status(201).json("user");
+
+  async me(_query: MeQuery, req: Request, res: Response) {
+    const { id } = req.user;
+    const user = await authService.me(id);
+    res.status(201).json(user);
   }
 }
 

@@ -15,7 +15,8 @@
   "include": [
     "src/**/*",
     "src/config/validateEnv.ts",
-    "../api-gateway/src/middleware"
+    "../api-gateway/src/middleware",
+    "../../shared/src/http/error.handler.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }
