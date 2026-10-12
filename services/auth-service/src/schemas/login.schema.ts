@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@ecommerce/shared";
 
 export const loginSchema = z.object({
   username: z

@@ -1,1 +1,1 @@
-export type { AuthenticatedUser, UserRole } from "@ecommerce/shared/types";
+export type { UserRole, AuthenticatedUser } from "@ecommerce/shared";

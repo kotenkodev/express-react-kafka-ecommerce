@@ -1,5 +1,5 @@
-import "dotenv/config";
 import { z } from "@ecommerce/shared";
+import "dotenv/config";
 
 const tokenDuration = z.enum(["15m", "30m", "1h", "7d", "30d"]);
 
