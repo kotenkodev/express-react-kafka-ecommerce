@@ -1,0 +1,28 @@
+import "dotenv/config";
+import { z } from "zod";
+
+const schema = z.object({
+  NODE_ENV: z
+    .enum(["development", "production", "test"])
+    .default("development"),
+  PORT: z.coerce.number().int().positive().default(8000),
+  AUTH_SERVICE_URL: z.string().url(),
+  ORDER_SERVICE_URL: z.string().url(),
+  PRODUCT_SERVICE_URL: z.string().url(),
+  SEARCH_SERVICE_URL: z.string().url(),
+  ANALYTICS_SERVICE_URL: z.string().url(),
+  JWT_SECRET: z.string().min(16),
+});
+
+const raw = schema.parse(process.env);
+
+export const env = {
+  nodeEnv: raw.NODE_ENV,
+  port: raw.PORT,
+  authServiceUrl: raw.AUTH_SERVICE_URL,
+  orderServiceUrl: raw.ORDER_SERVICE_URL,
+  productServiceUrl: raw.PRODUCT_SERVICE_URL,
+  searchServiceUrl: raw.SEARCH_SERVICE_URL,
+  analyticsServiceUrl: raw.ANALYTICS_SERVICE_URL,
+  jwtSecret: raw.JWT_SECRET,
+} as const;
