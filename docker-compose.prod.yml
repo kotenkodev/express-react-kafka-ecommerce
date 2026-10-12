@@ -154,7 +154,9 @@ services:
       start_period: 15s
 
   # --- MICROSERVICES (INTERNAL NETWORKING ONLY) ---
+  # Clear development host bindings when this file is used as an override.
   auth-service:
+    ports: !reset []
     build:
       context: ./services/auth-service
       dockerfile: Dockerfile
@@ -179,6 +181,7 @@ services:
       retries: 5
 
   product-service:
+    ports: !reset []
     build:
       context: ./services/product-service
       dockerfile: Dockerfile
@@ -199,6 +202,7 @@ services:
       retries: 5
 
   order-service:
+    ports: !reset []
     build:
       context: ./services/order-service
       dockerfile: Dockerfile
@@ -224,6 +228,7 @@ services:
       retries: 5
 
   payment-service:
+    ports: !reset []
     build:
       context: ./services/payment-service
       dockerfile: Dockerfile
@@ -246,6 +251,7 @@ services:
       retries: 5
 
   delivery-service:
+    ports: !reset []
     build:
       context: ./services/delivery-service
       dockerfile: Dockerfile
@@ -268,6 +274,7 @@ services:
       retries: 5
 
   analytics-service:
+    ports: !reset []
     build:
       context: ./services/analytics-service
       dockerfile: Dockerfile
@@ -290,6 +297,7 @@ services:
       retries: 5
 
   search-service:
+    ports: !reset []
     build:
       context: ./services/search-service
       dockerfile: Dockerfile
@@ -315,6 +323,7 @@ services:
       retries: 5
 
   api-gateway:
+    ports: !reset []
     build:
       context: ./services/api-gateway
       dockerfile: Dockerfile
