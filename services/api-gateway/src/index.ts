@@ -32,7 +32,9 @@ app.use((req, _res, next) => {
 
 app.use("/api/auth", optionalToken, createGatewayProxy(SERVICES.auth));
 
-app.use("/api/orders", authenticateToken, createSseProxy(SERVICES.order));
+app.use("/api/orders", authenticateToken, createGatewayProxy(SERVICES.order));
+
+app.use("/api/events", authenticateToken, createSseProxy(SERVICES.order));
 
 app.use("/api/search", authenticateToken, createGatewayProxy(SERVICES.search));
 

@@ -1,8 +1,6 @@
-export interface AuthenticatedUser {
-  id: string;
-  email?: string;
-  role: string;
-}
+import type { AuthenticatedUser } from "@ecommerce/shared/types";
+
+export type { AuthenticatedUser } from "@ecommerce/shared/types";
 
 declare global {
   namespace Express {
