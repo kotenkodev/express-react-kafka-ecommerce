@@ -34,8 +34,6 @@ app.use("/api/auth", optionalToken, createGatewayProxy(SERVICES.auth));
 
 app.use("/api/orders", authenticateToken, createSseProxy(SERVICES.order));
 
-app.use("/api/products", optionalToken, createGatewayProxy(SERVICES.product));
-
 app.use("/api/search", authenticateToken, createGatewayProxy(SERVICES.search));
 
 app.use(
@@ -43,6 +41,8 @@ app.use(
   authenticateToken,
   createGatewayProxy(SERVICES.analytics),
 );
+
+app.use("/api/products", optionalToken, createGatewayProxy(SERVICES.product));
 
 app.get("/health", (_req, res) =>
   res.json({ status: "ok", service: "api-gateway" }),
