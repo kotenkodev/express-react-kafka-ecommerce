@@ -1,16 +1,40 @@
 import { useEffect, useState } from "react";
-import { Card } from "./components/ui/card";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ShopPage from "./pages/ShopPage";
+import OrdersPage from "./pages/OrdersPage";
+import RoleRoute from "./components/RoleRoute";
+import SearchPage from "./pages/SearchPage";
+import AdminProductsPage from "./pages/AdminProductsPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import ProductSearchPage from "./pages/ProductSearchPage";
 
 function App() {
-  const [authStatus, setAuthStatus] = useState("");
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-  useEffect(() => {
-    fetch("http://localhost:3006/health")
-      .then((res) => res.json())
-      .then((data) => setAuthStatus(data.status));
-  }, []);
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<ShopPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
 
-  return <Card>Auth Service:{authStatus}</Card>;
+          <Route element={<RoleRoute roles={["user"]} />}>
+            <Route path="/product-search" element={<ProductSearchPage />} />
+          </Route>
+
+          <Route element={<RoleRoute roles={["admin"]} />}>
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/products" element={<AdminProductsPage />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
