@@ -2,8 +2,21 @@
   "name": "@ecommerce/shared",
   "version": "1.0.0",
   "type": "commonjs",
-  "main": "dist/prisma.js",
-  "types": "dist/prisma.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "prisma": [
+        "dist/prisma.d.ts"
+      ],
+      "types": [
+        "dist/types/index.d.ts"
+      ],
+      "validation": [
+        "dist/validation.d.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "npm run db:generate && tsc",
     "db:generate": "prisma generate",
@@ -13,14 +26,30 @@
     "@prisma/client": "5.22.0",
     "dotenv": "^18.0.7",
     "kafkajs": "^2.2.4",
-    "prom-client": "^15.1.0"
+    "ms": "^2.1.3",
+    "prom-client": "^15.1.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/ms": "^2.1.0",
     "@types/node": "^22.20.5",
     "prisma": "5.22.0",
     "typescript": "^5.x.x"
   },
   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./validation": {
+      "types": "./dist/validation.d.ts",
+      "default": "./dist/validation.js"
+    },
     "./prisma": {
       "types": "./dist/prisma.d.ts",
       "default": "./dist/prisma.js"

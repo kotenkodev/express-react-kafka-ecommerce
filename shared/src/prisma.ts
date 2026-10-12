@@ -14,6 +14,8 @@ if (process.env.NODE_ENV !== "production") {
 export { prisma as db };
 export { Prisma, PrismaClient } from "@prisma/client";
 
+export type { User, Role, Product, Order, OrderItem } from "@prisma/client";
+
 const healthCheck = async () => {
   try {
     await prisma.$queryRaw`SELECT 1`;
