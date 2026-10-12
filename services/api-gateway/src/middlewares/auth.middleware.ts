@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import type { AuthenticatedUser } from "@ecommerce/shared/types";
 import { env } from "../config/env";
+import { AuthenticatedUser } from "@ecommerce/shared";
 
 export const authenticateToken = (
   req: Request,
