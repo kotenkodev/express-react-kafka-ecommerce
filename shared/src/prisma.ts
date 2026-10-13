@@ -11,10 +11,16 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 
-export { prisma as db };
 export { Prisma, PrismaClient } from "@prisma/client";
 
-export type { User, Role, Product, Order, OrderItem } from "@prisma/client";
+export type {
+  User,
+  Role,
+  Product,
+  Order,
+  OrderItem,
+  Category,
+} from "@prisma/client";
 
 const healthCheck = async () => {
   try {

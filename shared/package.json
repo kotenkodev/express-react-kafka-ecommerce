@@ -20,7 +20,8 @@
   "scripts": {
     "build": "npm run db:generate && tsc",
     "db:generate": "prisma generate",
-    "db:validate": "prisma validate"
+    "db:validate": "prisma validate",
+    "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "5.22.0",

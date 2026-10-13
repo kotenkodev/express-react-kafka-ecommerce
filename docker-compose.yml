@@ -236,6 +236,7 @@ services:
     volumes:
       - ./services/auth-service/src:/app/services/auth-service/src
       - ./services/auth-service/tsconfig.json:/app/services/auth-service/tsconfig.json:ro
+      - ./shared/dist:/app/shared/dist:ro
     healthcheck:
       test:
         [
@@ -265,6 +266,7 @@ services:
     volumes:
       - ./services/product-service/src:/app/services/product-service/src
       - ./services/product-service/tsconfig.json:/app/services/product-service/tsconfig.json:ro
+      - ./shared/dist:/app/shared/dist:ro
     healthcheck:
       test:
         [
@@ -299,6 +301,7 @@ services:
     volumes:
       - ./services/order-service/src:/app/services/order-service/src
       - ./services/order-service/tsconfig.json:/app/services/order-service/tsconfig.json:ro
+      - ./shared/dist:/app/shared/dist:ro
     healthcheck:
       test:
         [
@@ -330,6 +333,7 @@ services:
     volumes:
       - ./services/payment-service/src:/app/services/payment-service/src
       - ./services/payment-service/tsconfig.json:/app/services/payment-service/tsconfig.json:ro
+      - ./shared/dist:/app/shared/dist:ro
     healthcheck:
       test:
         [
@@ -361,6 +365,7 @@ services:
     volumes:
       - ./services/delivery-service/src:/app/services/delivery-service/src
       - ./services/delivery-service/tsconfig.json:/app/services/delivery-service/tsconfig.json:ro
+      - ./shared/dist:/app/shared/dist:ro
     healthcheck:
       test:
         [
@@ -392,6 +397,7 @@ services:
     volumes:
       - ./services/analytics-service/src:/app/services/analytics-service/src
       - ./services/analytics-service/tsconfig.json:/app/services/analytics-service/tsconfig.json:ro
+      - ./shared/dist:/app/shared/dist:ro
     healthcheck:
       test:
         [
@@ -426,6 +432,7 @@ services:
     volumes:
       - ./services/search-service/src:/app/services/search-service/src
       - ./services/search-service/tsconfig.json:/app/services/search-service/tsconfig.json:ro
+      - ./shared/dist:/app/shared/dist:ro
     healthcheck:
       test:
         [
@@ -470,6 +477,7 @@ services:
     volumes:
       - ./services/api-gateway/src:/app/services/api-gateway/src
       - ./services/api-gateway/tsconfig.json:/app/services/api-gateway/tsconfig.json:ro
+      - ./shared/dist:/app/shared/dist:ro
     healthcheck:
       test:
         [

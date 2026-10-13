@@ -13,6 +13,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "docker compose up --build",
-    "down": "docker compose down -v"
+    "down": "docker compose down -v",
+    "db:push": "prisma db push --schema=./shared/prisma/schema.prisma",
+    "db:seed": "npm --prefix shared run db:seed"
   }
 }

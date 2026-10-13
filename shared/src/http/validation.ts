@@ -1,45 +1,39 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import type { z } from "zod";
 
-export type ValidatedHandler<Schema extends z.ZodTypeAny> = (
-  data: z.output<Schema>,
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => unknown;
+export interface ValidationSchemas {
+  params?: z.ZodTypeAny;
+  query?: z.ZodTypeAny;
+  body?: z.ZodTypeAny;
+}
 
-function validate<Schema extends z.ZodTypeAny>(
-  source: "body" | "query",
-  schema: Schema,
-  handler: ValidatedHandler<Schema>,
-): RequestHandler {
-  return (req, res, next) => {
-    void (async () => {
+export function validate(schemas: ValidationSchemas): RequestHandler {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const errors: Record<string, unknown> = {};
+
+    for (const [source, schema] of Object.entries(schemas) as [
+      "params" | "query" | "body",
+      z.ZodTypeAny,
+    ][]) {
+      if (!schema) continue;
+
       const result = await schema.safeParseAsync(req[source]);
 
       if (!result.success) {
-        res.status(400).json({
-          error: `Invalid request ${source}`,
-          details: result.error.flatten(),
-        });
-        return;
+        errors[source] = result.error.flatten();
+      } else {
+        // Assign coerced, trimmed, and sanitized data back to req
+        req[source] = result.data;
       }
+    }
 
-      await handler(result.data, req, res, next);
-    })().catch(next);
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({
+        error: "Validation failed",
+        details: errors,
+      });
+    }
+
+    next();
   };
-}
-
-export function validateBody<Schema extends z.ZodTypeAny>(
-  schema: Schema,
-  handler: ValidatedHandler<Schema>,
-): RequestHandler {
-  return validate("body", schema, handler);
-}
-
-export function validateQuery<Schema extends z.ZodTypeAny>(
-  schema: Schema,
-  handler: ValidatedHandler<Schema>,
-): RequestHandler {
-  return validate("query", schema, handler);
 }
