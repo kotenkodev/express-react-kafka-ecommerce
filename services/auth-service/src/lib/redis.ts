@@ -1,11 +1,25 @@
-import { Redis } from "ioredis";
+import Redis from "ioredis";
 import { env } from "../config/env";
 
-const redisUrl = new URL(env.redisUrl);
-if (env.redisPassword) {
-  redisUrl.password = env.redisPassword;
+let redis: Redis | null = null;
+
+export function getRedis(): Redis {
+  if (!redis) {
+    redis = new Redis(env.redisUrl, {
+      lazyConnect: true,
+    });
+  }
+  return redis;
 }
 
-export const redis = new Redis(redisUrl.toString(), {
-  lazyConnect: true,
-});
+export async function connectRedis(): Promise<void> {
+  await getRedis().connect();
+  console.log("Connected to Redis successfully.");
+}
+
+export async function disconnectRedis(): Promise<void> {
+  if (redis) {
+    await redis.quit();
+    redis = null;
+  }
+}
