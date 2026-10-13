@@ -22,7 +22,7 @@ export type {
   Category,
 } from "@prisma/client";
 
-const healthCheck = async () => {
+export const healthCheck = async () => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     console.log("Database connection is healthy.");

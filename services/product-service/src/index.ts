@@ -12,9 +12,9 @@ const PORT = process.env.PORT || 3007;
 app.use(cors());
 app.use(express.json());
 
-app.use(productRoutes);
+app.use("/products", productRoutes);
 
-app.get("/health", (_req: Request, res: Response) => {
+app.get("/products/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: "product-service" });
 });
 

@@ -1,10 +1,11 @@
-import { Prisma, prisma } from "@ecommerce/shared";
+import { Category, Prisma, prisma } from "@ecommerce/shared";
 import { ProductQueryInput } from "../schemas/product-query.schema";
 import { ProductCreateInput } from "../schemas/product.schema";
 import { ProductError } from "../lib/error";
+import { Product } from "@ecommerce/shared";
 
 export class ProductService {
-  async getProducts(query: ProductQueryInput) {
+  async getProducts(query: ProductQueryInput): Promise<Product[]> {
     const whereStatement: Prisma.ProductWhereInput = {};
 
     if (query.category) {
@@ -42,17 +43,11 @@ export class ProductService {
     return products;
   }
 
-  getCategories() {
-    return prisma.category.findMany({
-      distinct: ["name"],
-      select: {
-        id: true,
-        name: true,
-      },
-    });
+  async getCategories(): Promise<Category[]> {
+    return prisma.category.findMany({});
   }
 
-  async getProduct(id: string) {
+  async getProduct(id: string): Promise<Product | null> {
     const product = await prisma.product.findUnique({
       where: {
         id,
@@ -66,7 +61,7 @@ export class ProductService {
     return product;
   }
 
-  async createProduct(payload: ProductCreateInput) {
+  async createProduct(payload: ProductCreateInput): Promise<Product> {
     const { category, ...body } = payload;
 
     return prisma.product.create({
@@ -82,7 +77,7 @@ export class ProductService {
     });
   }
 
-  async updateProduct(id: string, payload: any) {
+  async updateProduct(id: string, payload: any): Promise<Product> {
     const { category, ...body } = payload;
     try {
       const updatedProduct = await prisma.product.update({
@@ -107,12 +102,12 @@ export class ProductService {
     }
   }
 
-  async deleteProduct(id: string) {
+  async deleteProduct(id: string): Promise<void> {
     try {
-      const updatedProduct = await prisma.product.delete({
+      await prisma.product.delete({
         where: { id },
       });
-      return updatedProduct;
+      return;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&

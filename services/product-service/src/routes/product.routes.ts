@@ -5,11 +5,21 @@ import { productSchema, productUpdateSchema } from "../schemas/product.schema";
 import { productController } from "../controllers/product.controller";
 import { adminOnly } from "../middlewares/adminOnly";
 import { validate } from "@ecommerce/shared";
+import { healthCheck } from "@ecommerce/shared";
 
 const router = Router();
 
+router.get("/test", async (req, res) => {
+  try {
+    await healthCheck();
+    res.status(200).json({ success: true, message: "Database connected!" });
+  } catch {
+    res.status(503).json({ success: false, message: "Database unavailable" });
+  }
+});
+
 router
-  .route("/products")
+  .route("/")
   .get(validate({ query: productQuerySchema }), productController.getProducts)
   .post(
     adminOnly,
@@ -17,10 +27,10 @@ router
     productController.createProduct,
   );
 
-router.get("/products/categories", productController.getCategories);
+router.get("/categories", productController.getCategories);
 
 router
-  .route("/products/:id")
+  .route("/:id")
   .get(validate({ params: productParamsSchema }), productController.getProduct)
   .put(
     adminOnly,

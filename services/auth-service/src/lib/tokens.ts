@@ -6,7 +6,7 @@ import { getRedis } from "./redis";
 const REFRESH_PREFIX = "refresh";
 const REFRESH_TOKEN_TTL = ms(env.refreshTokenExpiresIn) / 1000;
 
-export async function createRefreshSession(userId: number) {
+export async function createRefreshSession(userId: string) {
   const refreshToken = generateRefreshToken();
   const tokenHash = hashRefreshToken(refreshToken);
 
@@ -22,10 +22,10 @@ export async function createRefreshSession(userId: number) {
 
 export const getUserIdFromRefreshToken = async (
   refreshToken: string,
-): Promise<number | null> => {
+): Promise<string | null> => {
   const tokenHash = hashRefreshToken(refreshToken);
   const userId = await getRedis().get(`${REFRESH_PREFIX}:${tokenHash}`);
-  return userId ? parseInt(userId, 10) : null;
+  return userId;
 };
 
 export async function isRefreshTokenValid(

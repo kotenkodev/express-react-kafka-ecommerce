@@ -8,41 +8,44 @@ import {
 } from "../schemas/product.schema";
 
 export class ProductController {
-  getProducts(req: Request, res: Response) {
+  async getProducts(req: Request, res: Response) {
     const query = req.query as ProductQueryInput;
 
-    const products = productService.getProducts(query);
+    const products = await productService.getProducts(query);
     res.status(200).json({ success: true, data: products });
   }
 
-  getCategories(req: Request, res: Response) {}
+  async getCategories(_req: Request, res: Response) {
+    const categories = await productService.getCategories();
+    res.status(200).json({ success: true, data: categories });
+  }
 
-  getProduct(req: Request, res: Response) {
+  async getProduct(req: Request, res: Response) {
     const { id } = req.params as ProductParamsInput;
 
-    const product = productService.getProduct(id);
+    const product = await productService.getProduct(id);
     res.status(200).json({ success: true, data: product });
   }
 
-  createProduct(req: Request, res: Response) {
+  async createProduct(req: Request, res: Response) {
     const body = req.body as ProductCreateInput;
 
-    const product = productService.createProduct(body);
+    const product = await productService.createProduct(body);
     res.status(201).json({ success: true, data: product });
   }
 
-  updateProduct(req: Request, res: Response) {
+  async updateProduct(req: Request, res: Response) {
     const { id } = req.params as ProductParamsInput;
     const body = req.body as ProductUpdateInput;
 
-    const product = productService.updateProduct(id, body);
+    const product = await productService.updateProduct(id, body);
     res.status(200).json({ success: true, data: product });
   }
 
-  deleteProduct(req: Request, res: Response) {
+  async deleteProduct(req: Request, res: Response) {
     const { id } = req.params as ProductParamsInput;
 
-    productService.deleteProduct(id);
+    await productService.deleteProduct(id);
     res.status(204).send();
   }
 }

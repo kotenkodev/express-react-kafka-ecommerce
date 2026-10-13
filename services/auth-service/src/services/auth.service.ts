@@ -8,10 +8,17 @@ import {
 } from "../lib/tokens";
 import { generateAccessToken } from "../lib/jwt";
 import { AuthError } from "../lib/error";
-import { prisma } from "@ecommerce/shared";
+import { prisma, User } from "@ecommerce/shared";
+
+export type UserResponse = Omit<User, "passwordHash">;
+export interface LoginResult {
+  accessToken: string;
+  refreshToken: string;
+  user: UserResponse;
+}
 
 export class AuthService {
-  async register(userData: RegisterInput) {
+  async register(userData: RegisterInput): Promise<UserResponse> {
     const existingUser = await prisma.user.findUnique({
       where: { email: userData.email },
     });
@@ -37,9 +44,7 @@ export class AuthService {
     return userWithoutPassword;
   }
 
-  async login(
-    userData: LoginInput,
-  ): Promise<{ accessToken: string; refreshToken: string; user: any }> {
+  async login(userData: LoginInput): Promise<LoginResult> {
     const existingUser = await prisma.user.findUnique({
       where: { username: userData.username },
     });
@@ -69,7 +74,7 @@ export class AuthService {
     return { accessToken, refreshToken, user };
   }
 
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken: string): Promise<{ accessToken: string }> {
     const userId = await getUserIdFromRefreshToken(refreshToken);
 
     if (!userId) {
@@ -98,7 +103,7 @@ export class AuthService {
     await deleteRefreshSession(refreshToken);
   }
 
-  async me(userId: number) {
+  async me(userId: string): Promise<UserResponse> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
