@@ -9,6 +9,7 @@ import {
   createSseProxy,
 } from "./middlewares/proxy.middleware";
 import { env } from "./config/env";
+import { errorHandler } from "@ecommerce/shared";
 
 const app = express();
 
@@ -55,9 +56,7 @@ app.get("/health", (_req, res) =>
   res.json({ status: "ok", service: "api-gateway" }),
 );
 
-app.use((_req, res) => {
-  res.status(404).json({ error: "Route not found" });
-});
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`[API Gateway] Running on http://localhost:${PORT}`);

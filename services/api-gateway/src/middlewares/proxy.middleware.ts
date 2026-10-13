@@ -2,7 +2,6 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import { ClientRequest, IncomingMessage } from "http";
 import { Request } from "express";
 
-// Express removes the mount path from req.url before the proxy receives it.
 const stripApiPrefix = (path: string, req: IncomingMessage): string =>
   ((req as Request).originalUrl ?? path).replace(/^\/api(?=\/|$)/, "");
 
