@@ -5,11 +5,18 @@ RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json ./
+COPY shared/package.json ./shared/package.json
+COPY services/order-service/package.json ./services/order-service/package.json
 
-RUN npm install
+RUN npm ci --workspace=@ecommerce/shared --workspace=order-service --include-workspace-root=false --ignore-scripts
 
-COPY . .
+COPY shared ./shared
+COPY services/order-service ./services/order-service
+
+RUN npm run build --workspace=@ecommerce/shared
+
+WORKDIR /app/services/order-service
 
 EXPOSE 3001
 

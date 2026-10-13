@@ -13,7 +13,7 @@
         "dist/types/index.d.ts"
       ],
       "validation": [
-        "dist/validation.d.ts"
+        "dist/http/validation.d.ts"
       ]
     }
   },
@@ -47,8 +47,8 @@
       "default": "./dist/types/index.js"
     },
     "./validation": {
-      "types": "./dist/validation.d.ts",
-      "default": "./dist/validation.js"
+      "types": "./dist/http/validation.d.ts",
+      "default": "./dist/http/validation.js"
     },
     "./prisma": {
       "types": "./dist/prisma.d.ts",

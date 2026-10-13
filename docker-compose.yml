@@ -216,8 +216,8 @@ services:
   # --- MICROSERVICES ---
   auth-service:
     build:
-      context: ./services/auth-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/auth-service/Dockerfile
     container_name: auth-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -234,8 +234,8 @@ services:
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-secret123}
     volumes:
-      - ./services/auth-service:/app
-      - auth_service_modules:/app/node_modules
+      - ./services/auth-service/src:/app/services/auth-service/src
+      - ./services/auth-service/tsconfig.json:/app/services/auth-service/tsconfig.json:ro
     healthcheck:
       test:
         [
@@ -249,8 +249,8 @@ services:
 
   product-service:
     build:
-      context: ./services/product-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/product-service/Dockerfile
     container_name: product-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -263,8 +263,8 @@ services:
       PORT: ${PRODUCT_SERVICE_PORT:-3007}
       DATABASE_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin123}@postgres:5432/${POSTGRES_DB:-kafkashop}?schema=public
     volumes:
-      - ./services/product-service:/app
-      - product_service_modules:/app/node_modules
+      - ./services/product-service/src:/app/services/product-service/src
+      - ./services/product-service/tsconfig.json:/app/services/product-service/tsconfig.json:ro
     healthcheck:
       test:
         [
@@ -278,8 +278,8 @@ services:
 
   order-service:
     build:
-      context: ./services/order-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/order-service/Dockerfile
     container_name: order-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -297,8 +297,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin123}@postgres:5432/${POSTGRES_DB:-kafkashop}?schema=public
       KAFKA_BROKERS: kafka:29092
     volumes:
-      - ./services/order-service:/app
-      - order_service_modules:/app/node_modules
+      - ./services/order-service/src:/app/services/order-service/src
+      - ./services/order-service/tsconfig.json:/app/services/order-service/tsconfig.json:ro
     healthcheck:
       test:
         [
@@ -312,8 +312,8 @@ services:
 
   payment-service:
     build:
-      context: ./services/payment-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/payment-service/Dockerfile
     container_name: payment-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -328,8 +328,8 @@ services:
       PORT: ${PAYMENT_SERVICE_PORT:-3002}
       KAFKA_BROKERS: kafka:29092
     volumes:
-      - ./services/payment-service:/app
-      - payment_service_modules:/app/node_modules
+      - ./services/payment-service/src:/app/services/payment-service/src
+      - ./services/payment-service/tsconfig.json:/app/services/payment-service/tsconfig.json:ro
     healthcheck:
       test:
         [
@@ -343,8 +343,8 @@ services:
 
   delivery-service:
     build:
-      context: ./services/delivery-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/delivery-service/Dockerfile
     container_name: delivery-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -359,8 +359,8 @@ services:
       PORT: ${DELIVERY_SERVICE_PORT:-3003}
       KAFKA_BROKERS: kafka:29092
     volumes:
-      - ./services/delivery-service:/app
-      - delivery_service_modules:/app/node_modules
+      - ./services/delivery-service/src:/app/services/delivery-service/src
+      - ./services/delivery-service/tsconfig.json:/app/services/delivery-service/tsconfig.json:ro
     healthcheck:
       test:
         [
@@ -374,8 +374,8 @@ services:
 
   analytics-service:
     build:
-      context: ./services/analytics-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/analytics-service/Dockerfile
     container_name: analytics-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -390,8 +390,8 @@ services:
       PORT: ${ANALYTICS_SERVICE_PORT:-3004}
       KAFKA_BROKERS: kafka:29092
     volumes:
-      - ./services/analytics-service:/app
-      - analytics_service_modules:/app/node_modules
+      - ./services/analytics-service/src:/app/services/analytics-service/src
+      - ./services/analytics-service/tsconfig.json:/app/services/analytics-service/tsconfig.json:ro
     healthcheck:
       test:
         [
@@ -405,8 +405,8 @@ services:
 
   search-service:
     build:
-      context: ./services/search-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/search-service/Dockerfile
     container_name: search-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -424,8 +424,8 @@ services:
       ELASTICSEARCH_URL: http://elasticsearch:9200
       KAFKA_BROKERS: kafka:29092
     volumes:
-      - ./services/search-service:/app
-      - search_service_modules:/app/node_modules
+      - ./services/search-service/src:/app/services/search-service/src
+      - ./services/search-service/tsconfig.json:/app/services/search-service/tsconfig.json:ro
     healthcheck:
       test:
         [
@@ -440,8 +440,8 @@ services:
   # --- ENTRYPOINT GATEWAY ---
   api-gateway:
     build:
-      context: ./services/api-gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
     container_name: api-gateway
     networks: [kafka-net]
     restart: unless-stopped
@@ -468,8 +468,8 @@ services:
       SEARCH_SERVICE_URL: http://search-service:3005
       ANALYTICS_SERVICE_URL: http://analytics-service:3004
     volumes:
-      - ./services/api-gateway:/app
-      - api_gateway_modules:/app/node_modules
+      - ./services/api-gateway/src:/app/services/api-gateway/src
+      - ./services/api-gateway/tsconfig.json:/app/services/api-gateway/tsconfig.json:ro
     healthcheck:
       test:
         [
