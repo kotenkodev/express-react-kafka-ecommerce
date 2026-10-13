@@ -3,11 +3,12 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { productRoutes } from "./routes/product.routes";
 import { errorHandler } from "@ecommerce/shared";
+import { env } from "./config/env";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3007;
+const PORT = env.port;
 
 app.use(cors());
 app.use(express.json());

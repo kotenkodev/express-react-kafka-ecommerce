@@ -467,7 +467,7 @@ services:
       - "${API_GATEWAY_PORT:-8000}:${API_GATEWAY_PORT:-8000}"
     environment:
       PORT: ${API_GATEWAY_PORT:-8000}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
       JWT_SECRET: ${JWT_SECRET:-secret123}
       AUTH_SERVICE_URL: http://auth-service:3006
       ORDER_SERVICE_URL: http://order-service:3001

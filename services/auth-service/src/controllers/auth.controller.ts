@@ -3,10 +3,11 @@ import { authService } from "../services/auth.service";
 import type { RegisterInput } from "../schemas/register.schema";
 import type { LoginInput } from "../schemas/login.schema";
 import type { MeQuery } from "../schemas/me.schema";
+import { env } from "../config/env";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
+  secure: env.nodeEnv === "production",
   sameSite: "lax" as const,
   path: "/api/auth",
 };
@@ -52,9 +53,9 @@ export class AuthController {
   }
 
   async me(_query: MeQuery, req: Request, res: Response) {
-    const userId = Number(req.headers["x-user-id"]);
+    const userId = String(req.headers["x-user-id"]);
 
-    if (!userId || isNaN(userId)) {
+    if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 

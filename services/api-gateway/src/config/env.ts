@@ -12,6 +12,7 @@ const schema = z.object({
   SEARCH_SERVICE_URL: z.string().url(),
   ANALYTICS_SERVICE_URL: z.string().url(),
   JWT_SECRET: z.string().min(16),
+  CORS_ORIGINS: z.string().optional(),
 });
 
 const raw = schema.parse(process.env);
@@ -25,4 +26,7 @@ export const env = {
   searchServiceUrl: raw.SEARCH_SERVICE_URL,
   analyticsServiceUrl: raw.ANALYTICS_SERVICE_URL,
   jwtSecret: raw.JWT_SECRET,
+  corsOrigins: raw.CORS_ORIGINS?.split(",").map((o) => o.trim()) || [
+    "http://localhost:5173",
+  ],
 } as const;
