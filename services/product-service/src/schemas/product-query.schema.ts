@@ -2,6 +2,8 @@ import { z } from "@ecommerce/shared";
 
 export const productQuerySchema = z
   .object({
+    q: z.string().trim().optional(),
+
     category: z.string().trim().min(1, "Category cannot be empty").optional(),
 
     minPrice: z.coerce.number().min(0, "Price cannot be negative").optional(),

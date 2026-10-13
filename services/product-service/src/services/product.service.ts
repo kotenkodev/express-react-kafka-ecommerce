@@ -8,6 +8,13 @@ export class ProductService {
   async getProducts(query: ProductQueryInput): Promise<Product[]> {
     const whereStatement: Prisma.ProductWhereInput = {};
 
+    if (query.q) {
+      whereStatement.OR = [
+        { name: { contains: query.q, mode: "insensitive" } },
+        { description: { contains: query.q, mode: "insensitive" } },
+      ];
+    }
+
     if (query.category) {
       whereStatement.category = {
         name: {

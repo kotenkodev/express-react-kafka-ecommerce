@@ -5,7 +5,7 @@ const schema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
-  PORT: z.coerce.number().int().positive().default(8000),
+  PORT: z.coerce.number().int().positive().default(3007),
 });
 
 const raw = schema.parse(process.env);
