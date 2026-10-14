@@ -5,6 +5,7 @@ networks:
 volumes:
   postgres_data:
   redis_data:
+  redisinsight_data:
   es_data:
   prometheus_data:
   grafana_data:
@@ -139,6 +140,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    networks: [kafka-net]
+    restart: unless-stopped
+    ports:
+      - "${REDISINSIGHT_PORT:-5540}:5540"
+    volumes:
+      - redisinsight_data:/data
+    depends_on:
+      redis:
+        condition: service_healthy
 
   # --- INFRASTRUCTURE: SEARCH ENGINE ---
   elasticsearch:
