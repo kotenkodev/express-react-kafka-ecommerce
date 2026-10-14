@@ -10,6 +10,7 @@ COPY shared/package.json ./shared/package.json
 COPY services/delivery-service/package.json ./services/delivery-service/package.json
 
 RUN npm ci --workspace=@ecommerce/shared --workspace=delivery-service --include-workspace-root=false --ignore-scripts
+RUN npm install @esbuild/linux-x64
 
 COPY shared ./shared
 COPY services/delivery-service ./services/delivery-service

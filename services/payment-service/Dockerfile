@@ -10,6 +10,7 @@ COPY shared/package.json ./shared/package.json
 COPY services/payment-service/package.json ./services/payment-service/package.json
 
 RUN npm ci --workspace=@ecommerce/shared --workspace=payment-service --include-workspace-root=false --ignore-scripts
+RUN npm install @esbuild/linux-x64
 
 COPY shared ./shared
 COPY services/payment-service ./services/payment-service
