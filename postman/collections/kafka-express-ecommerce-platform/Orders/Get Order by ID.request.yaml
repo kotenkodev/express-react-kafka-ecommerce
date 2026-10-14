@@ -8,7 +8,7 @@ description: |-
   - `PREPARING`: Payment succeeded (80% probability), warehouse packaging goods.
   - `SHIPPED`: Goods picked up by courier (random courier name assigned).
   - `DELIVERED`: Order fulfilled successfully.
-  - `FAILED`: Payment failed or maximum retries reached (routed to `orders.DLQ`).
+  - `FAILED`: Payment failed or maximum retries reached (routed to `order.dlq`).
 
   #### Responses:
   - `200 OK`: Returns order details (`{ id, userId, status, courier, totalAmount, items: [...], createdAt, updatedAt }`).
@@ -17,7 +17,7 @@ description: |-
   - `404 Not Found`: Order does not exist.
 order: 3000
 method: GET
-url: '{{baseUrl}}/api/orders/{{orderId}}'
+url: "{{baseUrl}}/api/orders/{{orderId}}"
 scripts:
   - type: afterResponse
     code: |-
@@ -35,4 +35,3 @@ scripts:
         pm.expect(["PENDING", "PREPARING", "SHIPPED", "DELIVERED", "FAILED"]).to.include(res.status);
       });
     language: text/javascript
-

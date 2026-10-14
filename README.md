@@ -1,6 +1,24 @@
 # Kafka Express E-Commerce Platform
 
-Event-driven microservices e-commerce platform communicating asynchronously via Apache Kafka with JWT authentication, role-based access control, Elasticsearch full-text indexing, Prometheus analytics, and a React frontend.
+Event-driven microservices e-commerce platform communicating asynchronously via Apache Kafka.
+
+---
+
+## 🧭 Navigation
+
+| Component | Path | Role / Port |
+| :--- | :--- | :--- |
+| **API Gateway** | [services/api-gateway](./services/api-gateway/README.md) | Single entrypoint, JWT verify & reverse proxy (:8000) |
+| **Auth Service** | [services/auth-service](./services/auth-service/README.md) | User auth, JWT & Redis refresh tokens (:3006) |
+| **Order Service** | [services/order-service](./services/order-service/README.md) | Order management, Kafka producer & SSE stream (:3001) |
+| **Payment Service** | [services/payment-service](./services/payment-service/README.md) | Kafka payment simulation worker (:3002) |
+| **Delivery Service** | [services/delivery-service](./services/delivery-service/README.md) | Courier delivery stage pipeline (:3003) |
+| **Product Service** | [services/product-service](./services/product-service/README.md) | Catalog management & categories (:3007) |
+| **Search Service** | [services/search-service](./services/search-service/README.md) | Elasticsearch full-text order indexing (:3005) |
+| **Analytics Service** | [services/analytics-service](./services/analytics-service/README.md) | Real-time sliding window stats & Prometheus (:3004) |
+| **Shared Package** | [shared](./shared/README.md) | Prisma schema, singleton DB client & utilities |
+| **Web Frontend** | [web](./web/README.md) | React 18 + Vite SPA (:5173 / :80) |
+| **Postman API Suite** | [postman](./postman/README.md) | API collection, environment & automated tests |
 
 ---
 
@@ -16,18 +34,6 @@ npm run db:seed
 ```
 
 Default Admin Credentials: `admin@kafkashop.com` / `admin123`.
-
----
-
-## 📡 API & Postman Documentation
-
-A fully documented, automated Postman test suite and specification is provided in the [`postman/`](./postman/) directory:
-
-- **[Postman Master Guide](./postman/README.md)**: Architecture, quickstart, automated variable chaining, and Newman CI/CD.
-- **[System Architecture & Overview](./postman/documents/01-Architecture-and-Overview.md)**: Service directory, ports, and data flow.
-- **[Authentication & Security Guide](./postman/documents/02-Authentication-and-Security.md)**: JWT lifecycles, Redis sessions, and header injection.
-- **[End-to-End Testing Workflows](./postman/documents/03-End-to-End-Testing-Workflows.md)**: Chained requests and collection runner instructions.
-- **[Kafka Event Flow & SSE Stream](./postman/documents/04-Kafka-Event-Flow-and-SSE.md)**: Event schemas, retry backoff, DLQ, and Server-Sent Events.
 
 ### Run API Tests via Newman
 ```bash

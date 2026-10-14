@@ -1,10 +1,32 @@
-# Shared infrastructure and types
+# Shared Package
 
-This package uses Prisma 5.22 with PostgreSQL. Models live in
-`prisma/schema.prisma`.
+Common Prisma ORM models, database client singleton, Kafka clients, error handlers, and TypeScript contracts shared across all microservices.
 
-Set `DATABASE_URL` in the service environment (or a `.env` file in its working
-directory). From the repository root:
+---
+
+## 🧭 Navigation
+
+- **[← Back to Root](../README.md)**
+- **Services**:
+  - [API Gateway](../services/api-gateway/README.md)
+  - [Auth Service](../services/auth-service/README.md)
+  - [Order Service](../services/order-service/README.md)
+  - [Payment Service](../services/payment-service/README.md)
+  - [Delivery Service](../services/delivery-service/README.md)
+  - [Product Service](../services/product-service/README.md)
+  - [Search Service](../services/search-service/README.md)
+  - [Analytics Service](../services/analytics-service/README.md)
+- **Packages & Tools**:
+  - [Web Frontend](../web/README.md)
+  - [Postman API Suite](../postman/README.md)
+
+---
+
+## Setup & Build
+
+This package uses Prisma 5.22 with PostgreSQL. Models live in `prisma/schema.prisma`.
+
+Set `DATABASE_URL` in the service environment (or a `.env` file in its working directory). From the repository root:
 
 ```sh
 npm run db:generate --workspace=@ecommerce/shared
@@ -21,9 +43,7 @@ const user = await prisma.user.findUnique({
 });
 ```
 
-`db` is also exported as an alias of `prisma`. Generating the client and building
-the package do not apply database migrations. Disconnect the client with
-`await prisma.$disconnect()` when shutting down the service.
+`db` is also exported as an alias of `prisma`. Generating the client and building the package do not apply database migrations. Disconnect the client with `await prisma.$disconnect()` when shutting down the service.
 
 ## Identity types
 
@@ -31,9 +51,7 @@ the package do not apply database migrations. Disconnect the client with
 import type { AuthenticatedUser, UserRole } from "@ecommerce/shared/types";
 ```
 
-`AuthenticatedUser.id` is a number, matching the Prisma `User.id` field, and
-`UserRole` is `"user" | "admin"`. These types do not validate headers or JWT
-claims at runtime. HTTP identity headers are still strings.
+`AuthenticatedUser.id` is a string (UUID), matching the Prisma `User.id` field, and `UserRole` is `"user" | "admin"`. These types do not validate headers or JWT claims at runtime. HTTP identity headers are still strings.
 
 ## Controller validation
 
@@ -51,12 +69,5 @@ router.get("/example", validateQuery(querySchema, async (query, req, res) => {
   res.json({ page: query.page });
 }));
 ```
-
-The first controller argument is the parsed schema output, including defaults
-and transformations. Invalid input returns HTTP 400 with validation details and
-does not call the controller. Async refinements are supported; thrown errors
-and rejected controller promises are passed to Express error middleware.
-The wrappers do not modify `req.body` or `req.query`. If a schema wraps its body
-in `z.object({ body: ... })`, pass `schema.shape.body` to `validateBody`.
 
 Redis configuration stays local to auth-service.

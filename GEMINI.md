@@ -10,10 +10,10 @@ Event-driven microservices e-commerce platform communicating asynchronously via 
 | **api-gateway**       | `8000`                      | Node.js / Express                  | Single entrypoint. JWT verify, header injection (`x-user-id`, `x-user-email`, `x-user-role`), reverse proxy                                     |
 | **auth-service**      | `3006`                      | Express + Prisma + Redis           | JWT access (15m) + Redis refresh token (7d TTL: `refresh_token:<userId>`). User roles: `user`, `admin`                                          |
 | **order-service**     | `3001`                      | Express + Prisma + Kafka           | REST API, Kafka producer (`orders`), status consumer (`order.status.updated`), SSE stream (`/events`)                                           |
-| **payment-service**   | `3002`                      | Node Kafka Worker                  | Consumes `orders`. Simulates payment: 1–3s latency, 80% SUCCESS / 20% FAILED. Retries: 3x (1s, 2s, 4s backoff) → `orders.DLQ`                   |
+| **payment-service**   | `3002`                      | Node Kafka Worker                  | Consumes `orders`. Simulates payment: 1–3s latency, 80% SUCCESS / 20% FAILED. Retries: 3x (1s, 2s, 4s backoff) → `order.dlq`                    |
 | **delivery-service**  | `3003`                      | Node Kafka Worker                  | Consumes `payments`. Skips FAILED. Random courier (`Іван`,`Марія`,`Олег`,`Аня`,`Тарас`,`Оля`). Stages every 5s: PREPARING → SHIPPED → DELIVERED |
-| **analytics-service** | `3004`                      | Node Kafka Streams                 | 1-min sliding window: order count, total revenue, successRate, avgProcessingMs. Emits `order-stats`, Prometheus `/metrics`                      |
-| **search-service**    | `3005`                      | Express + `@elastic/elasticsearch` | Consumes `orders`, `payments`, `order.status.updated`, `orders.DLQ`. Idempotent upsert into ES index `orders`. Full-text search API             |
+| **analytics-service** | `3004`                      | Node Kafka Streams                 | 1-min sliding window: order count, total revenue, successRate, avgProcessingMs. Emits `order.stats`, Prometheus `/metrics`                      |
+| **search-service**    | `3005`                      | Express + `@elastic/elasticsearch` | Consumes `orders`, `payments`, `order.status.updated`, `order.dlq`. Idempotent upsert into ES index `orders`. Full-text search API              |
 | **product-service**   | `3007`                      | Express + Prisma                   | Catalog CRUD. Public read, admin-only write via `adminOnly` middleware (checks `x-user-role === 'admin'`, 403 on fail)                          |
 | **kafka**             | `9092` (int), `29092` (ext) | `cp-kafka:7.5.0`                   | Event broker                                                                                                                                    |
 | **zookeeper**         | `2181`                      | `cp-zookeeper:7.5.0`               | Cluster coordination                                                                                                                            |
@@ -45,9 +45,9 @@ Key partitioning: always by `orderId`.
   `{"paymentId":"uuid","orderId":"uuid","status":"SUCCESS"|"FAILED","processedAt":"ISO","failureReason":string|null}`
 - **`order.status.updated`** (`delivery-service` → `order-service`, `search`, `analytics`):
   `{"orderId":"uuid","status":"PREPARING"|"SHIPPED"|"DELIVERED","courier":"string","updatedAt":"ISO"}`
-- **`orders.DLQ`** (`payment-service` on 3 failed retries → `search`, alerts):
+- **`order.dlq`** (`payment-service` on 3 failed retries → `search`, alerts):
   `{"originalMessage":object,"error":"string","retryCount":3,"failedAt":"ISO"}`
-- **`order-stats`** (`analytics-service` → dashboards/monitors):
+- **`order.stats`** (`analytics-service` → dashboards/monitors):
   `{"windowStart":"ISO","ordersCount":number,"totalRevenue":number,"successRate":number,"avgProcessingMs":number}`
 
 ## 4. Service APIs & Endpoints
@@ -80,7 +80,7 @@ Key partitioning: always by `orderId`.
 - `GET /search?q=&status=&page=&limit=` (full-text search, status filter, pagination)
 - `GET /search/orders/:id` (get order doc from Elasticsearch)
 - `GET /search/stats` (ES aggs: `totalOrders`, `totalRevenue`, `avgOrderAmount`)
-- ES Upsert semantics: `orders` -> index new; `payments` -> update paymentStatus/processedAt; `order.status.updated` -> update status/courier; `orders.DLQ` -> set status="payment_failed".
+- ES Upsert semantics: `orders` -> index new; `payments` -> update paymentStatus/processedAt; `order.status.updated` -> update status/courier; `order.dlq` -> set status="payment_failed".
 
 ### Analytics (`:3004`)
 
@@ -139,4 +139,4 @@ Prometheus scrapes `/metrics` every 15s. Grafana 6-panel dashboard refreshes eve
 1. **Header Security**: Never trust frontend claims of user ID or role; downstream services strictly parse `x-user-id` and `x-user-role` injected by `api-gateway`.
 2. **Kafka Partitioning**: Always partition messages by `orderId` to ensure ordered per-order processing.
 3. **Idempotence**: Consumers (especially search and status updates) must handle out-of-order or duplicate deliveries safely.
-4. **Resilience**: Payment worker retries up to 3 times before routing to `orders.DLQ`; delivery worker ignores failed payments.
+4. **Resilience**: Payment worker retries up to 3 times before routing to `order.dlq`; delivery worker ignores failed payments.

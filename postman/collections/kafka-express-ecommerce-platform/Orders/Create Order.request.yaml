@@ -5,7 +5,7 @@ description: |-
 
   #### Asynchronous Microservices Chain:
   1. **Order Service**: Persists order with initial state `PENDING`, emits event to Kafka `orders` topic keyed by `orderId`.
-  2. **Payment Service**: Consumes from `orders`, simulates 1–3s processing with 80% success rate, emits `PaymentProcessedEvent` to `payments` (or routes to `orders.DLQ` after 3 retries).
+  2. **Payment Service**: Consumes from `orders`, simulates 1–3s processing with 80% success rate, emits `PaymentProcessedEvent` to `payments` (or routes to `order.dlq` after 3 retries).
   3. **Delivery Service**: Consumes successful payments and advances order stages (PREPARING -> SHIPPED -> DELIVERED).
   4. **SSE Stream (`/api/events`)**: Pushes real-time status transitions to connected clients.
 
@@ -20,7 +20,7 @@ description: |-
   - `401 Unauthorized`: Missing or invalid Bearer token.
 order: 1000
 method: POST
-url: '{{baseUrl}}/api/orders'
+url: "{{baseUrl}}/api/orders"
 headers:
   - key: Content-Type
     value: application/json
@@ -51,4 +51,3 @@ scripts:
         pm.collectionVariables.set("orderId", res.id);
       });
     language: text/javascript
-

@@ -44,7 +44,7 @@ sequenceDiagram
         OrderSvc->>ClientSSE: Push SSE event { status: "DELIVERED" }
     else Payment Failed (20% with retries)
         PaymentSvc->>PaymentSvc: Retry backoff (1s, 2s, 4s)
-        PaymentSvc->>Kafka: Publish to 'orders.DLQ' after 3 retries
+        PaymentSvc->>Kafka: Publish to 'order.dlq' after 3 retries
         Kafka->>SearchSvc: Update status = "payment_failed"
         Kafka->>OrderSvc: Update order status to FAILED
         OrderSvc->>ClientSSE: Push SSE event { status: "FAILED" }
@@ -56,25 +56,27 @@ sequenceDiagram
 ## 2. Kafka Topic Contracts & Schemas
 
 ### 1. `orders` (`OrderCreatedEvent`)
+
 - **Producer**: `order-service`
 - **Consumers**: `payment-service`, `search-service`, `analytics-service`
 - **Partition Key**: `orderId`
+
 ```json
 {
   "orderId": "6b2a0c44-59e3-4de7-bd1c-1f4869871142",
   "userId": "9f7b1e88-34ab-4a55-b289-4b6d9e030991",
-  "items": [
-    { "productId": "1a2b3c4d-...", "quantity": 2, "price": 129.99 }
-  ],
+  "items": [{ "productId": "1a2b3c4d-...", "quantity": 2, "price": 129.99 }],
   "totalAmount": 259.98,
   "createdAt": "2026-10-13T21:00:00.000Z"
 }
 ```
 
 ### 2. `payments` (`PaymentProcessedEvent`)
+
 - **Producer**: `payment-service`
 - **Consumers**: `delivery-service`, `search-service`, `analytics-service`
 - **Partition Key**: `orderId`
+
 ```json
 {
   "paymentId": "550e8400-e29b-41d4-a716-446655440000",
@@ -86,9 +88,11 @@ sequenceDiagram
 ```
 
 ### 3. `order.status.updated`
+
 - **Producer**: `delivery-service`
 - **Consumers**: `order-service`, `search-service`, `analytics-service`
 - **Partition Key**: `orderId`
+
 ```json
 {
   "orderId": "6b2a0c44-59e3-4de7-bd1c-1f4869871142",
@@ -98,9 +102,11 @@ sequenceDiagram
 }
 ```
 
-### 4. `orders.DLQ` (Dead Letter Queue)
+### 4. `order.dlq` (Dead Letter Queue)
+
 - **Producer**: `payment-service` (on 3 exhausted retries)
 - **Consumers**: `search-service`, alerting monitors
+
 ```json
 {
   "originalMessage": { ... },
@@ -117,6 +123,7 @@ sequenceDiagram
 The endpoint `/api/events` streams live events to the authenticated user.
 
 ### Testing in Postman:
+
 1. Ensure `accessToken` is populated (run `Auth/Login`).
 2. Open `Events (SSE) / Subscribe to Order Events`.
 3. Click **Send**.

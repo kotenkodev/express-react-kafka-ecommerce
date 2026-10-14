@@ -9,7 +9,7 @@ This workspace contains the complete API collection, environment definitions, an
 ```mermaid
 flowchart TD
     Client[Client / Postman / React SPA] -->|Port 8000| Gateway[API Gateway]
-    
+
     subgraph Edge Layer
         Gateway -->|JWT Verify + Header Injection| Auth[auth-service :3006]
         Gateway -->|Order API & SSE Stream| Order[order-service :3001]
@@ -22,7 +22,7 @@ flowchart TD
         Order -->|Produce 'orders'| K[Kafka Broker :9092]
         K -->|Consume 'orders'| Payment[payment-service :3002]
         Payment -->|Produce 'payments'| K
-        Payment -->|3x Failure Backoff| DLQ[orders.DLQ]
+        Payment -->|3x Failure Backoff| DLQ[order.dlq]
         K -->|Consume 'payments'| Delivery[delivery-service :3003]
         Delivery -->|Produce 'order.status.updated'| K
         K -->|Consume updates| Order
@@ -44,20 +44,20 @@ flowchart TD
 
 ## 2. Port & Service Directory
 
-| Service | Port | Base Path | Auth Requirement | Role |
-| :--- | :--- | :--- | :--- | :--- |
-| **API Gateway** | `8000` | `http://localhost:8000` | N/A | Single public entrypoint & reverse proxy |
-| **Auth Service** | `3006` | `/api/auth` | Public / Bearer for `/me` | Registration, login, JWT issuance, Redis refresh sessions |
-| **Product Service** | `3007` | `/api/products` | Public read, Admin write | Product catalog and category lookup |
-| **Order Service** | `3001` | `/api/orders`, `/api/events` | Bearer Token | Order creation, retrieval, and SSE event streaming |
-| **Payment Service** | `3002` | Worker | Internal Kafka | Consumes `orders`, simulates 80% success / 20% failure, retries 3x |
-| **Delivery Service** | `3003` | Worker | Internal Kafka | Consumes `payments`, simulates courier stages every 5s |
-| **Search Service** | `3005` | `/api/search` | Bearer Token | Elasticsearch full-text order indexing and search |
-| **Analytics Service** | `3004` | `/api/analytics` | Bearer Token | 1-minute sliding window aggregations and Prometheus scraping |
-| **Kafka Broker** | `9092` / `29092` | Internal / External | N/A | High-throughput distributed event broker |
-| **Elasticsearch** | `9200` | Internal | N/A | Search engine and distributed analytics |
-| **Redis** | `6379` | Internal | N/A | In-memory refresh token store (`refresh_token:<userId>`) |
-| **PostgreSQL** | `5432` | Internal | N/A | Relational store for users, products, and orders |
+| Service               | Port             | Base Path                    | Auth Requirement          | Role                                                               |
+| :-------------------- | :--------------- | :--------------------------- | :------------------------ | :----------------------------------------------------------------- |
+| **API Gateway**       | `8000`           | `http://localhost:8000`      | N/A                       | Single public entrypoint & reverse proxy                           |
+| **Auth Service**      | `3006`           | `/api/auth`                  | Public / Bearer for `/me` | Registration, login, JWT issuance, Redis refresh sessions          |
+| **Product Service**   | `3007`           | `/api/products`              | Public read, Admin write  | Product catalog and category lookup                                |
+| **Order Service**     | `3001`           | `/api/orders`, `/api/events` | Bearer Token              | Order creation, retrieval, and SSE event streaming                 |
+| **Payment Service**   | `3002`           | Worker                       | Internal Kafka            | Consumes `orders`, simulates 80% success / 20% failure, retries 3x |
+| **Delivery Service**  | `3003`           | Worker                       | Internal Kafka            | Consumes `payments`, simulates courier stages every 5s             |
+| **Search Service**    | `3005`           | `/api/search`                | Bearer Token              | Elasticsearch full-text order indexing and search                  |
+| **Analytics Service** | `3004`           | `/api/analytics`             | Bearer Token              | 1-minute sliding window aggregations and Prometheus scraping       |
+| **Kafka Broker**      | `9092` / `29092` | Internal / External          | N/A                       | High-throughput distributed event broker                           |
+| **Elasticsearch**     | `9200`           | Internal                     | N/A                       | Search engine and distributed analytics                            |
+| **Redis**             | `6379`           | Internal                     | N/A                       | In-memory refresh token store (`refresh_token:<userId>`)           |
+| **PostgreSQL**        | `5432`           | Internal                     | N/A                       | Relational store for users, products, and orders                   |
 
 ---
 

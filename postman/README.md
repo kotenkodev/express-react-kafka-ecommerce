@@ -1,10 +1,34 @@
-# Kafka Express E-Commerce Platform — Postman API Documentation & Test Suite
+# Postman API Suite
 
-Comprehensive API documentation, request specifications, and automated test suite for the **Kafka Express E-Commerce Platform**.
+Comprehensive API documentation, request specifications, and automated test suite for the Kafka Express E-Commerce Platform.
+
+---
+
+## 🧭 Navigation
+
+- **[← Back to Root](../README.md)**
+- **Services**:
+  - [API Gateway](../services/api-gateway/README.md)
+  - [Auth Service](../services/auth-service/README.md)
+  - [Order Service](../services/order-service/README.md)
+  - [Payment Service](../services/payment-service/README.md)
+  - [Delivery Service](../services/delivery-service/README.md)
+  - [Product Service](../services/product-service/README.md)
+  - [Search Service](../services/search-service/README.md)
+  - [Analytics Service](../services/analytics-service/README.md)
+- **Packages & Tools**:
+  - [Shared Package](../shared/README.md)
+  - [Web Frontend](../web/README.md)
+- **Guides**:
+  - [01 Architecture & Overview](./documents/01-Architecture-and-Overview.md)
+  - [02 Authentication & Security](./documents/02-Authentication-and-Security.md)
+  - [03 End-to-End Testing](./documents/03-End-to-End-Testing-Workflows.md)
+  - [04 Kafka Event Flow & SSE](./documents/04-Kafka-Event-Flow-and-SSE.md)
 
 ---
 
 ## Table of Contents
+
 1. [Overview & Microservices Architecture](#overview--microservices-architecture)
 2. [Service & Port Directory](#service--port-directory)
 3. [Postman Workspace Formats](#postman-workspace-formats)
@@ -42,16 +66,16 @@ graph TD
 
 ## Service & Port Directory
 
-| Service | Port | Endpoint URL / Base Path | Purpose |
-| :--- | :--- | :--- | :--- |
-| **API Gateway** | `8000` | `http://localhost:8000` | Public reverse proxy, JWT validation, header injection |
-| **Auth Service** | `3006` | `{{authServiceUrl}}` / `http://localhost:3006` | Registration, login, JWT issuance, Redis refresh tokens |
-| **Order Service** | `3001` | `{{orderServiceUrl}}` / `http://localhost:3001` | Order placement, state machine, SSE streaming (`/api/events`) |
-| **Product Service** | `3007` | `{{productServiceUrl}}` / `http://localhost:3007` | Catalog search, category lists, admin CRUD |
-| **Payment Service** | `3002` | Internal Worker | Consumes `orders`, 80% success rate, 3x backoff to `orders.DLQ` |
-| **Delivery Service** | `3003` | Internal Worker | Consumes `payments`, stages: PREPARING -> SHIPPED -> DELIVERED |
-| **Search Service** | `3005` | `{{searchServiceUrl}}` / `http://localhost:3005` | Elasticsearch full-text search indexer & query endpoint |
-| **Analytics Service** | `3004` | `{{analyticsServiceUrl}}` / `http://localhost:3004` | 1-min sliding window statistics & Prometheus `/metrics` |
+| Service               | Port   | Endpoint URL / Base Path                            | Purpose                                                        |
+| :-------------------- | :----- | :-------------------------------------------------- | :------------------------------------------------------------- |
+| **API Gateway**       | `8000` | `http://localhost:8000`                             | Public reverse proxy, JWT validation, header injection         |
+| **Auth Service**      | `3006` | `{{authServiceUrl}}` / `http://localhost:3006`      | Registration, login, JWT issuance, Redis refresh tokens        |
+| **Order Service**     | `3001` | `{{orderServiceUrl}}` / `http://localhost:3001`     | Order placement, state machine, SSE streaming (`/api/events`)  |
+| **Product Service**   | `3007` | `{{productServiceUrl}}` / `http://localhost:3007`   | Catalog search, category lists, admin CRUD                     |
+| **Payment Service**   | `3002` | Internal Worker                                     | Consumes `orders`, 80% success rate, 3x backoff to `order.dlq` |
+| **Delivery Service**  | `3003` | Internal Worker                                     | Consumes `payments`, stages: PREPARING -> SHIPPED -> DELIVERED |
+| **Search Service**    | `3005` | `{{searchServiceUrl}}` / `http://localhost:3005`    | Elasticsearch full-text search indexer & query endpoint        |
+| **Analytics Service** | `3004` | `{{analyticsServiceUrl}}` / `http://localhost:3004` | 1-min sliding window statistics & Prometheus `/metrics`        |
 
 ---
 
@@ -70,21 +94,21 @@ This workspace provides two interchangeable formats:
 
 ## Environment Variables
 
-| Variable | Default Value | Description |
-| :--- | :--- | :--- |
-| `baseUrl` | `http://localhost:8000` | API Gateway entrypoint |
-| `authServiceUrl` | `http://localhost:3006` | Auth microservice direct URL |
-| `orderServiceUrl` | `http://localhost:3001` | Order microservice direct URL |
-| `productServiceUrl` | `http://localhost:3007` | Product microservice direct URL |
-| `searchServiceUrl` | `http://localhost:3005` | Search microservice direct URL |
-| `analyticsServiceUrl` | `http://localhost:3004` | Analytics microservice direct URL |
-| `accessToken` | `""` | Captured automatically from `Login` / `Refresh` |
-| `refreshToken` | `""` | Captured automatically from `Login` cookie / response |
-| `productId` | `""` | Captured automatically from `Get Products` or `Create Product` |
-| `productId2` | `""` | Secondary product ID captured from `Get Products` |
-| `orderId` | `""` | Captured automatically from `Create Order` |
-| `adminEmail` | `admin@kafkashop.com` | Default seed administrator email |
-| `adminPassword` | `admin123` | Default seed administrator password |
+| Variable              | Default Value           | Description                                                    |
+| :-------------------- | :---------------------- | :------------------------------------------------------------- |
+| `baseUrl`             | `http://localhost:8000` | API Gateway entrypoint                                         |
+| `authServiceUrl`      | `http://localhost:3006` | Auth microservice direct URL                                   |
+| `orderServiceUrl`     | `http://localhost:3001` | Order microservice direct URL                                  |
+| `productServiceUrl`   | `http://localhost:3007` | Product microservice direct URL                                |
+| `searchServiceUrl`    | `http://localhost:3005` | Search microservice direct URL                                 |
+| `analyticsServiceUrl` | `http://localhost:3004` | Analytics microservice direct URL                              |
+| `accessToken`         | `""`                    | Captured automatically from `Login` / `Refresh`                |
+| `refreshToken`        | `""`                    | Captured automatically from `Login` cookie / response          |
+| `productId`           | `""`                    | Captured automatically from `Get Products` or `Create Product` |
+| `productId2`          | `""`                    | Secondary product ID captured from `Get Products`              |
+| `orderId`             | `""`                    | Captured automatically from `Create Order`                     |
+| `adminEmail`          | `admin@kafkashop.com`   | Default seed administrator email                               |
+| `adminPassword`       | `admin123`              | Default seed administrator password                            |
 
 ---
 
@@ -142,11 +166,13 @@ To execute a complete test pass:
 ## Running with Newman (CI/CD)
 
 ### Install Newman
+
 ```bash
 npm install -g newman newman-reporter-htmlextra
 ```
 
 ### Run Full Test Suite in Terminal
+
 ```bash
 newman run postman/Kafka-Express-Ecommerce.postman_collection.json \
   -e postman/Local-Development.postman_environment.json \
@@ -154,6 +180,7 @@ newman run postman/Kafka-Express-Ecommerce.postman_collection.json \
 ```
 
 ### Run with HTML Report Export
+
 ```bash
 newman run postman/Kafka-Express-Ecommerce.postman_collection.json \
   -e postman/Local-Development.postman_environment.json \
@@ -167,28 +194,28 @@ newman run postman/Kafka-Express-Ecommerce.postman_collection.json \
 
 The API Gateway strictly enforces role permissions before proxying requests downstream:
 
-| Route | Role | Behavior |
-| :--- | :--- | :--- |
-| `/api/products` (POST/PUT/DELETE) | `admin` | Allowed. Regular users receive `403 Forbidden`. |
-| `/api/products` (GET) | Any / Public | Allowed without authentication. |
-| `/api/orders` (GET) | `user` | Returns only orders created by the user (`x-user-id`). |
-| `/api/orders` (GET) | `admin` | Returns all orders across all users. |
-| `/api/orders` (POST) | `user` / `admin` | Allowed for any authenticated session. |
-| `/api/search/*` | Authenticated | Requires valid JWT token. |
-| `/api/analytics` | Authenticated | Requires valid JWT token. |
+| Route                             | Role             | Behavior                                               |
+| :-------------------------------- | :--------------- | :----------------------------------------------------- |
+| `/api/products` (POST/PUT/DELETE) | `admin`          | Allowed. Regular users receive `403 Forbidden`.        |
+| `/api/products` (GET)             | Any / Public     | Allowed without authentication.                        |
+| `/api/orders` (GET)               | `user`           | Returns only orders created by the user (`x-user-id`). |
+| `/api/orders` (GET)               | `admin`          | Returns all orders across all users.                   |
+| `/api/orders` (POST)              | `user` / `admin` | Allowed for any authenticated session.                 |
+| `/api/search/*`                   | Authenticated    | Requires valid JWT token.                              |
+| `/api/analytics`                  | Authenticated    | Requires valid JWT token.                              |
 
 ---
 
 ## Error & Status Code Reference
 
-| Status Code | Meaning | Common Cause |
-| :--- | :--- | :--- |
-| `200 OK` | Request succeeded | Standard response for GET, PUT, and order creations |
-| `201 Created` | Resource created | Returned on `POST /api/auth/register` and `POST /api/products` |
-| `204 No Content` | Deleted | Returned on `DELETE /api/products/:id` |
-| `400 Bad Request` | Validation failure | Missing required body fields, invalid UUIDs, or negative quantities |
-| `401 Unauthorized` | Missing / Invalid Token | Missing Bearer token or expired JWT token |
-| `403 Forbidden` | Insufficient Permissions | Non-admin attempting product CRUD, or user accessing another user's order |
-| `404 Not Found` | Resource Not Found | Product or order UUID not found in database |
-| `409 Conflict` | Conflict | Registration with duplicate email address |
-| `500 Server Error` | Unhandled Error | Internal error or database connection failure |
+| Status Code        | Meaning                  | Common Cause                                                              |
+| :----------------- | :----------------------- | :------------------------------------------------------------------------ |
+| `200 OK`           | Request succeeded        | Standard response for GET, PUT, and order creations                       |
+| `201 Created`      | Resource created         | Returned on `POST /api/auth/register` and `POST /api/products`            |
+| `204 No Content`   | Deleted                  | Returned on `DELETE /api/products/:id`                                    |
+| `400 Bad Request`  | Validation failure       | Missing required body fields, invalid UUIDs, or negative quantities       |
+| `401 Unauthorized` | Missing / Invalid Token  | Missing Bearer token or expired JWT token                                 |
+| `403 Forbidden`    | Insufficient Permissions | Non-admin attempting product CRUD, or user accessing another user's order |
+| `404 Not Found`    | Resource Not Found       | Product or order UUID not found in database                               |
+| `409 Conflict`     | Conflict                 | Registration with duplicate email address                                 |
+| `500 Server Error` | Unhandled Error          | Internal error or database connection failure                             |
