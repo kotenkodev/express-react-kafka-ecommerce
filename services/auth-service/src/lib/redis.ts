@@ -7,6 +7,10 @@ export function getRedis(): Redis {
   if (!redis) {
     redis = new Redis(env.redisUrl, {
       lazyConnect: true,
+      enableOfflineQueue: false,
+      maxRetriesPerRequest: 1,
+      commandTimeout: 2000,
+      ...(env.redisPassword ? { password: env.redisPassword } : {}),
     });
   }
   return redis;

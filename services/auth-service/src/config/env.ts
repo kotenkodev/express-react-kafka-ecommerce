@@ -7,7 +7,7 @@ const schema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
-  PORT: z.coerce.number().int().positive().default(8000),
+  PORT: z.coerce.number().int().positive().default(3006),
   JWT_SECRET: z.string().min(16),
   JWT_EXPIRES_IN: tokenDuration.default("15m"),
   REFRESH_TOKEN_EXPIRES_IN: tokenDuration.default("7d"),
@@ -20,6 +20,12 @@ const schema = z.object({
     }, "Redis URL must use redis:// or rediss://")
     .default("redis://localhost:6379"),
   REDIS_PASSWORD: z.string().min(1).optional(),
+  TRUST_PROXY: z.string().default(""),
+  AUTH_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(120),
+  LOGIN_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(30),
+  LOGIN_FAILURE_LIMIT: z.coerce.number().int().positive().default(10),
+  REGISTER_RATE_LIMIT_PER_HOUR: z.coerce.number().int().positive().default(5),
+  REFRESH_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(30),
 });
 
 const raw = schema.parse(process.env);
@@ -32,4 +38,10 @@ export const env = {
   refreshTokenExpiresIn: raw.REFRESH_TOKEN_EXPIRES_IN,
   redisUrl: raw.REDIS_URL,
   redisPassword: raw.REDIS_PASSWORD,
+  trustProxy: raw.TRUST_PROXY.split(",").map((value) => value.trim()).filter(Boolean),
+  authRateLimit: raw.AUTH_RATE_LIMIT_PER_MINUTE,
+  loginRateLimit: raw.LOGIN_RATE_LIMIT_PER_MINUTE,
+  loginFailureLimit: raw.LOGIN_FAILURE_LIMIT,
+  registerRateLimit: raw.REGISTER_RATE_LIMIT_PER_HOUR,
+  refreshRateLimit: raw.REFRESH_RATE_LIMIT_PER_MINUTE,
 } as const;

@@ -2,6 +2,9 @@ import type { Request, Response } from "express";
 import { authService } from "../services/auth.service";
 import { env } from "../config/env";
 import { RequestWithUser } from "@ecommerce/shared";
+import ms from "ms";
+import { readRefreshToken } from "../schemas/refresh-token.schema";
+import { refundSuccessfulLogin } from "../middlewares/rateLimit";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -21,17 +24,18 @@ export class AuthController {
     const { accessToken, refreshToken, user } = await authService.login(
       req.body,
     );
+    await refundSuccessfulLogin(req);
 
     res.cookie("refreshToken", refreshToken, {
       ...COOKIE_OPTIONS,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    }); // 7 days
+      maxAge: ms(env.refreshTokenExpiresIn),
+    });
 
     res.status(200).json({ accessToken, user });
   }
 
   async refresh(req: Request, res: Response) {
-    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    const refreshToken = readRefreshToken(req);
     if (!refreshToken) {
       return res.status(401).json({ error: "Refresh token required" });
     }
@@ -42,7 +46,7 @@ export class AuthController {
   }
 
   async logout(req: Request, res: Response) {
-    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    const refreshToken = readRefreshToken(req);
     if (refreshToken) {
       await authService.logout(refreshToken);
     }

@@ -1,15 +1,13 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+import { env } from "./config/env";
 import { authRoutes } from "./routes/auth.routes";
-import { errorHandler } from "@ecommerce/shared";
+import { authErrorHandler } from "./middlewares/authErrorHandler";
 import cookieParser from "cookie-parser";
 import { connectRedis, disconnectRedis } from "./lib/redis";
 
-dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 3006;
+app.set("trust proxy", env.trustProxy);
 
 app.use(cors());
 app.use(express.json());
@@ -21,12 +19,12 @@ app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: "auth-service" });
 });
 
-app.use(errorHandler);
+app.use(authErrorHandler);
 
 const start = async () => {
   await connectRedis();
-  const server = app.listen(PORT, () => {
-    console.log(`Auth service running on port ${PORT}`);
+  const server = app.listen(env.port, () => {
+    console.log(`Auth service running on port ${env.port}`);
   });
 
   const shutdown = async (signal: string) => {

@@ -8,9 +8,27 @@ import {
 } from "../lib/tokens";
 import { generateAccessToken } from "../lib/jwt";
 import { AuthError } from "../lib/error";
-import { prisma, User } from "@ecommerce/shared";
+import { prisma, Prisma } from "@ecommerce/shared";
+import { randomBytes } from "node:crypto";
 
-export type UserResponse = Omit<User, "passwordHash">;
+const publicUserSelect = {
+  id: true,
+  username: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  role: true,
+  createdAt: true,
+  updatedAt: true,
+} as const satisfies Prisma.UserSelect;
+
+export type UserResponse = Prisma.UserGetPayload<{ select: typeof publicUserSelect }>;
+
+// Reuse a random dummy hash so missing accounts still perform password verification.
+let dummyPasswordHash: Promise<string> | undefined;
+function getDummyPasswordHash(): Promise<string> {
+  return (dummyPasswordHash ??= hashPassword(randomBytes(32).toString("hex")));
+}
 export interface LoginResult {
   accessToken: string;
   refreshToken: string;
@@ -19,57 +37,48 @@ export interface LoginResult {
 
 export class AuthService {
   async register(userData: RegisterInput): Promise<UserResponse> {
-    const existingUser = await prisma.user.findUnique({
-      where: { email: userData.email },
-    });
-
-    if (existingUser) {
-      throw new AuthError("User with this email already exists.");
-    }
-
     const hashedPassword = await hashPassword(userData.password);
 
-    const user = await prisma.user.create({
-      data: {
-        email: userData.email,
-        username: userData.username,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        passwordHash: hashedPassword,
-      },
-    });
-
-    const { passwordHash, ...userWithoutPassword } = user;
-
-    return userWithoutPassword;
+    try {
+      return await prisma.user.create({
+        data: {
+          email: userData.email,
+          username: userData.username,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          passwordHash: hashedPassword,
+        },
+        select: publicUserSelect,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        throw new AuthError("Email or username is already in use.", 409);
+      }
+      throw error;
+    }
   }
 
   async login(userData: LoginInput): Promise<LoginResult> {
-    const identifier = userData.email || userData.username;
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          ...(userData.email ? [{ email: userData.email }] : []),
-          ...(userData.username ? [{ username: userData.username }] : []),
-          ...(identifier ? [{ email: identifier }, { username: identifier }] : []),
-        ],
-      },
+    const existingUser = await prisma.user.findUnique({
+      where: userData.email !== undefined
+        ? { email: userData.email }
+        : { username: userData.username! },
+      select: { ...publicUserSelect, passwordHash: true },
     });
 
-    if (!existingUser) {
+    const isPasswordValid = await verifyPassword(
+      userData.password,
+      existingUser?.passwordHash ?? await getDummyPasswordHash(),
+    );
+
+    if (!existingUser || !isPasswordValid) {
       throw new AuthError("Invalid credentials.");
     }
 
     const { passwordHash, ...user } = existingUser;
-
-    const isPasswordValid = await verifyPassword(
-      userData.password,
-      passwordHash,
-    );
-
-    if (!isPasswordValid) {
-      throw new AuthError("Invalid password.");
-    }
 
     const accessToken = generateAccessToken({
       id: existingUser.id,
@@ -113,15 +122,14 @@ export class AuthService {
   async me(userId: string): Promise<UserResponse> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      select: publicUserSelect,
     });
 
     if (!user) {
       throw new AuthError("User not found.");
     }
 
-    const { passwordHash, ...userWithoutPassword } = user;
-
-    return userWithoutPassword;
+    return user;
   }
 }
 
