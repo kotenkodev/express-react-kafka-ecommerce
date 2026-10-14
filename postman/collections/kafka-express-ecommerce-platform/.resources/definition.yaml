@@ -25,20 +25,12 @@ description: |-
   6. **Events / Subscribe**: Live SSE stream tracking order updates.
 variables:
   baseUrl: http://localhost:8000
-  authServiceUrl: http://localhost:3006
-  productServiceUrl: http://localhost:3007
-  orderServiceUrl: http://localhost:3001
-  analyticsServiceUrl: http://localhost:3004
-  searchServiceUrl: http://localhost:3005
   accessToken: ""
-  refreshToken: ""
   productId: ""
   productId2: ""
   orderId: ""
-  adminEmail: admin@kafkashop.com
-  adminPassword: admin123
+  refreshToken: ""
 auth:
   type: bearer
   credentials:
     token: "{{accessToken}}"
-
