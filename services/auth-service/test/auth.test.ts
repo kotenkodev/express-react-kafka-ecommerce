@@ -10,8 +10,7 @@ process.env.NODE_ENV = "test";
 
 test("auth HTTP contracts", async (t) => {
   const { authRoutes } = await import("../src/routes/auth.routes");
-  const { authErrorHandler } = await import("../src/middlewares/authErrorHandler");
-  const { prisma, Prisma } = await import("@ecommerce/shared");
+  const { prisma, Prisma, errorHandler } = await import("@ecommerce/shared");
   const { getRedis } = await import("../src/lib/redis");
   const { hashPassword } = await import("../src/lib/password");
   const { rateLimiters, clientIpKey } = await import("../src/middlewares/rateLimit");
@@ -34,7 +33,7 @@ test("auth HTTP contracts", async (t) => {
   const app = express();
   app.use(express.json(), cookieParser());
   app.use("/auth", authRoutes);
-  app.use(authErrorHandler);
+  app.use(errorHandler);
   const server = app.listen(0, "127.0.0.1");
   await once(server, "listening");
   t.after(() => new Promise<void>((resolve) => server.close(() => resolve())));

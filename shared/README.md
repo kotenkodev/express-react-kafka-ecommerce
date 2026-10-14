@@ -57,17 +57,23 @@ import type { AuthenticatedUser, UserRole } from "@ecommerce/shared/types";
 
 ```ts
 import { z } from "zod";
-import { validateBody, validateQuery } from "@ecommerce/shared/validation";
+import { validate } from "@ecommerce/shared/validation";
 
 const bodySchema = z.object({ name: z.string().trim().min(1) });
-router.post("/example", validateBody(bodySchema, async (body, req, res) => {
-  res.json({ name: body.name });
-}));
+router.post("/example", validate({ body: bodySchema }), (req, res) => {
+  res.json({ name: req.body.name });
+});
 
 const querySchema = z.object({ page: z.coerce.number().int().positive().default(1) });
-router.get("/example", validateQuery(querySchema, async (query, req, res) => {
+router.get("/example", validate({ query: querySchema }), (req, res) => {
+  const query = res.locals.query as z.infer<typeof querySchema>;
   res.json({ page: query.page });
-}));
+});
 ```
+
+Validated bodies and route parameters replace `req.body` and `req.params`.
+Validated query values are stored in `res.locals.query` because Express 5 exposes
+`req.query` as a getter-only property. Read `res.locals.query` to use schema defaults,
+coercions, and transformations. Invalid input returns HTTP 400 before the controller runs.
 
 Redis configuration stays local to auth-service.

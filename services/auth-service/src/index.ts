@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import { env } from "./config/env";
 import { authRoutes } from "./routes/auth.routes";
-import { authErrorHandler } from "./middlewares/authErrorHandler";
+import { errorHandler } from "@ecommerce/shared";
 import cookieParser from "cookie-parser";
 import { connectRedis, disconnectRedis } from "./lib/redis";
 
@@ -19,7 +19,7 @@ app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: "auth-service" });
 });
 
-app.use(authErrorHandler);
+app.use(errorHandler);
 
 const start = async () => {
   await connectRedis();
