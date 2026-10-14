@@ -1,0 +1,6 @@
+$kind: http-request
+order: 3000
+method: POST
+url: '{{baseUrl}}/api/auth/refresh'
+auth:
+  type: noauth

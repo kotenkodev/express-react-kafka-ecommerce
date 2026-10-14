@@ -1,0 +1,22 @@
+$kind: http-request
+order: 1000
+method: GET
+url: '{{baseUrl}}/api/products'
+auth:
+  type: noauth
+queryParams:
+  - key: q
+    value: ''
+    disabled: true
+  - key: category
+    value: ''
+    disabled: true
+  - key: minPrice
+    value: ''
+    disabled: true
+  - key: maxPrice
+    value: ''
+    disabled: true
+  - key: inStock
+    value: 'true'
+    disabled: true

@@ -1,0 +1,18 @@
+$kind: http-request
+order: 4000
+method: GET
+url: "{{productServiceUrl}}/health"
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Product service is healthy", function () {
+        const res = pm.response.json();
+        pm.expect(res.status).to.eql("ok");
+        pm.expect(res.service).to.eql("product-service");
+      });
+    language: text/javascript

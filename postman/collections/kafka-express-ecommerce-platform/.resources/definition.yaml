@@ -1,0 +1,12 @@
+$kind: collection
+name: Kafka Express E-Commerce Platform
+variables:
+  baseUrl: http://localhost:8000
+  accessToken: ""
+  productId: ""
+  productId2: ""
+  orderId: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{accessToken}}"

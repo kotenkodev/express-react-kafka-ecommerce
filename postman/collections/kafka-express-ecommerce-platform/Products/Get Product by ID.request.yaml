@@ -1,0 +1,7 @@
+$kind: http-request
+description: ""
+order: 3000
+method: GET
+url: "{{baseUrl}}/api/products/{{productId}}"
+auth:
+  type: noauth
