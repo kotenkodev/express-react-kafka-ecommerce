@@ -10,7 +10,7 @@ export class OrderSSESController {
 
     const session: Session = await createSession(req, res);
 
-    session.data = {
+    session.state = {
       userId: user.id,
       role: user.role,
     };
@@ -23,15 +23,26 @@ export class OrderSSESController {
     userId: string;
     status: string;
     courier?: string;
+    updatedAt?: string;
   }) {
-    ordersChannel.broadcast(order, "order.status.updated", {
-      filter: (session) => {
-        const sessionUser = session.data as { userId: string; role: string };
-        return (
-          sessionUser.role === "admin" || sessionUser.userId === order.userId
-        );
-      },
-    });
+    const payload = {
+      ...order,
+      orderId: order.id,
+    };
+
+    const filter = (session: Session) => {
+      const sessionUser = session.state as {
+        userId: string;
+        role: string;
+      };
+
+      return (
+        sessionUser.role === "admin" || sessionUser.userId === order.userId
+      );
+    };
+
+    ordersChannel.broadcast(payload, "order_update", { filter });
+    ordersChannel.broadcast(payload, "order.status.updated", { filter });
   }
 }
 

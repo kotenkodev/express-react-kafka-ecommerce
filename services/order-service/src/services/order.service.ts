@@ -1,5 +1,6 @@
 import { AuthenticatedUser, HttpError, prisma } from "@ecommerce/shared";
 import { OrderCreateInput } from "../schemas/order-create.schema";
+import { publishOrderCreated } from "../kafka/producers/order.producer";
 
 export class OrderService {
   async createOrder(userId: string, items: OrderCreateInput) {
@@ -67,7 +68,17 @@ export class OrderService {
       });
     });
 
-    // TODO emit OrderCreatedEvent to Kafka topic "orders"
+    await publishOrderCreated({
+      orderId: order.id,
+      userId: order.userId,
+      items: order.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: Number(item.unitPrice),
+      })),
+      totalAmount: Number(order.totalAmount),
+      createdAt: order.createdAt.toISOString(),
+    });
 
     return order;
   }
