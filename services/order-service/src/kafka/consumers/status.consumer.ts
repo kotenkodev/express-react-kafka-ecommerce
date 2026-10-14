@@ -6,9 +6,17 @@ import {
 } from "@ecommerce/shared";
 import { env } from "../../config/env";
 import { orderStatusUpdatedSchema } from "../../schemas/order-status.schema";
-import { applyOrderStatus } from "../../services/order-status.service";
+import {
+  applyOrderDLQ,
+  applyOrderStatus,
+  applyPaymentStatus,
+} from "../../services/order-status.service";
 import { orderSSEController } from "../../controllers/sse.controller";
-import type { OrderStatusUpdated } from "@ecommerce/shared";
+import type {
+  Order,
+  OrderStatusUpdated,
+  PaymentProcessed,
+} from "@ecommerce/shared";
 import { orderProducer } from "../producers/order.producer";
 
 export const statusConsumer = createKafkaConsumer(
@@ -27,60 +35,110 @@ export async function startStatusConsumer(): Promise<void> {
     fromBeginning: true,
   });
 
+  await statusConsumer.subscribe({
+    topic: TOPICS.PAYMENTS,
+    fromBeginning: true,
+  });
+
+  await statusConsumer.subscribe({
+    topic: TOPICS.ORDER_DLQ,
+    fromBeginning: true,
+  });
+
   await statusConsumer.run({
     eachMessage: async ({ topic, partition, message }) => {
       kafkaMessagesConsumed.inc({ topic, groupId: "order-service" });
-      let event: OrderStatusUpdated;
+
+      if (!message.value) return;
 
       try {
-        if (!message.value) {
-          throw new Error("Order status event has no value");
-        }
+        switch (topic) {
+          case TOPICS.ORDER_STATUS_UPDATED: {
+            let event: OrderStatusUpdated;
+            try {
+              const payload: unknown = JSON.parse(message.value.toString());
+              event = orderStatusUpdatedSchema.parse(payload);
 
-        const payload: unknown = JSON.parse(message.value.toString());
-        event = orderStatusUpdatedSchema.parse(payload);
+              if (message.key?.toString() !== event.orderId) {
+                throw new Error("Order status message key must match orderId");
+              }
+            } catch (error) {
+              const sourceId = `${topic}:${partition}:${message.offset}`;
+              await orderProducer.send({
+                topic: "order.status.updated.dlq",
+                acks: -1,
+                messages: [
+                  {
+                    key: sourceId,
+                    value: JSON.stringify({
+                      sourceTopic: topic,
+                      sourcePartition: partition,
+                      sourceOffset: message.offset,
+                      originalKey: message.key?.toString() ?? null,
+                      originalValue: message.value?.toString() ?? null,
+                      error:
+                        error instanceof Error ? error.message : String(error),
+                      failedAt: new Date().toISOString(),
+                    }),
+                  },
+                ],
+              });
+              console.warn(`Invalid status event quarantined: ${sourceId}`);
+              return;
+            }
 
-        if (message.key?.toString() !== event.orderId) {
-          throw new Error("Order status message key must match orderId");
+            const order = await applyOrderStatus(event);
+
+            if (!order) return;
+
+            if (order) broadcastOrder(order, event.updatedAt);
+
+            break;
+          }
+          case TOPICS.PAYMENTS: {
+            const payment = JSON.parse(
+              message.value.toString(),
+            ) as PaymentProcessed;
+            const order = await applyPaymentStatus(payment);
+            if (!order) return;
+
+            if (order) broadcastOrder(order, payment.processedAt);
+            break;
+          }
+          case TOPICS.ORDER_DLQ: {
+            const dlq = JSON.parse(message.value.toString()) as {
+              originalMessage?: { orderId?: string };
+              failedAt?: string;
+            };
+            const orderId =
+              message.key?.toString() || dlq.originalMessage?.orderId;
+            if (!orderId) return;
+
+            const failedAt = dlq.failedAt || new Date().toISOString();
+            const order = await applyOrderDLQ(orderId, failedAt);
+
+            if (order) broadcastOrder(order, failedAt);
+
+            break;
+          }
         }
       } catch (error) {
         kafkaConsumerErrors.inc({ topic, groupId: "order-service" });
-        const sourceId = `${topic}:${partition}:${message.offset}`;
-
-        await orderProducer.send({
-          topic: "order.status.updated.dlq",
-          acks: -1,
-          messages: [
-            {
-              key: sourceId,
-              value: JSON.stringify({
-                sourceTopic: topic,
-                sourcePartition: partition,
-                sourceOffset: message.offset,
-                originalKey: message.key?.toString() ?? null,
-                originalValue: message.value?.toString() ?? null,
-                error: error instanceof Error ? error.message : String(error),
-                failedAt: new Date().toISOString(),
-              }),
-            },
-          ],
-        });
-
-        console.warn(`Invalid status event quarantined: ${sourceId}`);
-        return;
+        console.error(
+          `[Order Consumer] Error processing topic ${topic}:`,
+          error,
+        );
       }
-
-      const order = await applyOrderStatus(event);
-
-      if (!order) return;
-
-      orderSSEController.broadcastOrderStatus({
-        id: order.id,
-        userId: order.userId,
-        status: order.status,
-        courier: order.courier ?? undefined,
-        updatedAt: order.statusUpdatedAt?.toISOString() ?? event.updatedAt,
-      });
     },
+  });
+}
+
+function broadcastOrder(order: Order, updatedAt: string) {
+  orderSSEController.broadcastOrderStatus({
+    id: order.id,
+    userId: order.userId,
+    status: order.status,
+    courier: order.courier ?? undefined,
+    updatedAt,
   });
 }
