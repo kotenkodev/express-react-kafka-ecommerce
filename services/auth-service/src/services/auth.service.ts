@@ -45,12 +45,19 @@ export class AuthService {
   }
 
   async login(userData: LoginInput): Promise<LoginResult> {
-    const existingUser = await prisma.user.findUnique({
-      where: { username: userData.username },
+    const identifier = userData.email || userData.username;
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          ...(userData.email ? [{ email: userData.email }] : []),
+          ...(userData.username ? [{ username: userData.username }] : []),
+          ...(identifier ? [{ email: identifier }, { username: identifier }] : []),
+        ],
+      },
     });
 
     if (!existingUser) {
-      throw new AuthError("User with this username does not exist.");
+      throw new AuthError("Invalid credentials.");
     }
 
     const { passwordHash, ...user } = existingUser;

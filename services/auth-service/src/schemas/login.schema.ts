@@ -1,26 +1,18 @@
 import { z } from "@ecommerce/shared";
 
-export const loginSchema = z.object({
-  username: z
-    .string({
-      required_error: "Username is required",
-      invalid_type_error: "Username must be a string",
-    })
-    .trim()
-    .min(3, "Username must be at least 3 characters")
-    .max(30, "Username must not exceed 30 characters")
-    .regex(
-      /^[a-zA-Z0-9_]+$/,
-      "Username can only contain letters, numbers, and underscores",
-    ),
-
-  password: z
-    .string({
-      required_error: "Password is required",
-      invalid_type_error: "Password must be a string",
-    })
-    .min(8, "Password must be at least 8 characters")
-    .max(100, "Password must not exceed 100 characters"),
-});
+export const loginSchema = z
+  .object({
+    username: z.string().trim().min(3).max(50).optional(),
+    email: z.string().trim().email().optional(),
+    password: z
+      .string({
+        required_error: "Password is required",
+      })
+      .min(6, "Password must be at least 6 characters")
+      .max(100, "Password must not exceed 100 characters"),
+  })
+  .refine((data) => Boolean(data.username || data.email), {
+    message: "Either username or email is required",
+  });
 
 export type LoginInput = z.infer<typeof loginSchema>;

@@ -1,9 +1,7 @@
 import type { Request, Response } from "express";
 import { authService } from "../services/auth.service";
-import type { RegisterInput } from "../schemas/register.schema";
-import type { LoginInput } from "../schemas/login.schema";
-import type { MeQuery } from "../schemas/me.schema";
 import { env } from "../config/env";
+import { RequestWithUser } from "@ecommerce/shared";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -13,14 +11,16 @@ const COOKIE_OPTIONS = {
 };
 
 export class AuthController {
-  async register(body: RegisterInput, _req: Request, res: Response) {
-    const user = await authService.register(body);
+  async register(req: Request, res: Response) {
+    const user = await authService.register(req.body);
 
     res.status(201).json(user);
   }
 
-  async login(body: LoginInput, _req: Request, res: Response) {
-    const { accessToken, refreshToken, user } = await authService.login(body);
+  async login(req: Request, res: Response) {
+    const { accessToken, refreshToken, user } = await authService.login(
+      req.body,
+    );
 
     res.cookie("refreshToken", refreshToken, {
       ...COOKIE_OPTIONS,
@@ -31,7 +31,7 @@ export class AuthController {
   }
 
   async refresh(req: Request, res: Response) {
-    const refreshToken = req.cookies?.refreshToken;
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
     if (!refreshToken) {
       return res.status(401).json({ error: "Refresh token required" });
     }
@@ -42,7 +42,7 @@ export class AuthController {
   }
 
   async logout(req: Request, res: Response) {
-    const refreshToken = req.cookies?.refreshToken;
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
     if (refreshToken) {
       await authService.logout(refreshToken);
     }
@@ -52,14 +52,14 @@ export class AuthController {
     res.status(200).json({ message: "User logged out" });
   }
 
-  async me(_query: MeQuery, req: Request, res: Response) {
-    const userId = String(req.headers["x-user-id"]);
+  async me(req: Request, res: Response) {
+    const { user: authUser } = req as RequestWithUser;
 
-    if (!userId) {
+    if (!authUser) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const user = await authService.me(userId);
+    const user = await authService.me(authUser.id);
     res.status(200).json(user);
   }
 }
