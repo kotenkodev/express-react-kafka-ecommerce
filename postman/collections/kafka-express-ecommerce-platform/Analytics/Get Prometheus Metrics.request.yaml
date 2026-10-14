@@ -1,0 +1,27 @@
+$kind: http-request
+description: |-
+  ### Get Prometheus Metrics Scrape Endpoint
+  Directly accesses the Prometheus standard scrape endpoint on the Analytics Service (port `3004`).
+
+  #### Scraped Metrics:
+  - `kafka_messages_produced_total`: Message count partitioned by topic.
+  - `kafka_messages_consumed_total`: Consumption rate by topic and consumer group.
+  - `kafka_consumer_errors_total`: Errors encountered during consumer processing.
+  - `order_processing_duration_seconds`: Histogram measuring end-to-end processing latency.
+  - `payment_success_total` / `payment_failure_total`: Payment outcome counters.
+  - `http_requests_total`: HTTP request counts by route and status code.
+
+  #### Responses:
+  - `200 OK`: Text format Prometheus exposition.
+order: 2000
+method: GET
+url: "{{analyticsServiceUrl}}/metrics"
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+    language: text/javascript

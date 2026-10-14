@@ -1,4 +1,34 @@
 $kind: http-request
+description: |-
+  ### Get Current Authenticated User Profile
+  Retrieves the user profile for the bearer token provided in the `Authorization` header.
+
+  #### Gateway Header Injection:
+  The API Gateway verifies the JWT token and passes down downstream security headers:
+  - `x-user-id`: The authenticated user's UUID.
+  - `x-user-email`: The user's email.
+  - `x-user-role`: Role of the user (`user` or `admin`).
+
+  #### Responses:
+  - `200 OK`: User profile returned (`{ id, username, email, role, firstName, lastName, createdAt, updatedAt }`).
+  - `401 Unauthorized`: Missing or invalid Bearer JWT token.
 order: 5000
 method: GET
 url: '{{baseUrl}}/api/auth/me'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("User profile contains expected fields", function () {
+        const res = pm.response.json();
+        pm.expect(res).to.have.property("id");
+        pm.expect(res).to.have.property("email");
+        pm.expect(res).to.have.property("username");
+        pm.expect(res).to.have.property("role");
+        pm.expect(["user", "admin"]).to.include(res.role);
+      });
+    language: text/javascript
+

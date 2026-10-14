@@ -44,3 +44,12 @@ values:
     value: 'http://localhost:3005'
     enabled: true
     type: default
+  - key: adminEmail
+    value: 'admin@kafkashop.com'
+    enabled: true
+    type: default
+  - key: adminPassword
+    value: 'admin123'
+    enabled: true
+    type: secret
+

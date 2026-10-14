@@ -1,5 +1,34 @@
 $kind: http-request
+description: |-
+  ### Real-Time Order Events Stream (Server-Sent Events)
+  Establishes a persistent, unidirectionally streaming HTTP connection (`text/event-stream`) to receive real-time updates as Kafka events advance orders through payment, packaging, shipping, and delivery stages.
+
+  #### How it works in this architecture:
+  1. The client opens an SSE connection through the API Gateway (`/api/events`).
+  2. The Gateway validates JWT Bearer authentication, sets `x-user-id`, and delegates to `order-service`'s SSE controller with buffering disabled.
+  3. `order-service` consumes Kafka status events (`order.status.updated`, `payments`) and matches them to active client subscriptions.
+  4. Real-time updates push automatically to the client without polling.
+
+  #### Connection Headers:
+  - `Accept: text/event-stream`
+  - `Cache-Control: no-cache`
+  - `Authorization: Bearer {{accessToken}}`
+
+  #### Stream Event Format:
+  ```
+  event: order_update
+  data: {"orderId":"uuid","status":"SHIPPED","courier":"Іван","updatedAt":"2026-10-13T21:00:00Z"}
+  ```
+
+  #### How to Test:
+  - In Postman: Send the request; Postman maintains an open SSE connection displaying incoming stream chunks in real-time.
+  - In Terminal: `curl -N -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/events`
 order: 1000
 method: GET
 url: '{{baseUrl}}/api/events'
-description: Server-Sent Events stream for real-time order status updates
+headers:
+  - key: Accept
+    value: text/event-stream
+  - key: Cache-Control
+    value: no-cache
+

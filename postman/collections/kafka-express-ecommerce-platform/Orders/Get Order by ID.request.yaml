@@ -1,4 +1,38 @@
 $kind: http-request
+description: |-
+  ### Get Order Status & Details
+  Fetches detailed order status and line items for the given order UUID.
+
+  #### Lifecycle Status Values:
+  - `PENDING`: Order received, awaiting payment event processing.
+  - `PREPARING`: Payment succeeded (80% probability), warehouse packaging goods.
+  - `SHIPPED`: Goods picked up by courier (random courier name assigned).
+  - `DELIVERED`: Order fulfilled successfully.
+  - `FAILED`: Payment failed or maximum retries reached (routed to `orders.DLQ`).
+
+  #### Responses:
+  - `200 OK`: Returns order details (`{ id, userId, status, courier, totalAmount, items: [...], createdAt, updatedAt }`).
+  - `401 Unauthorized`: Missing or invalid Bearer token.
+  - `403 Forbidden`: Authenticated user does not own this order.
+  - `404 Not Found`: Order does not exist.
 order: 3000
 method: GET
 url: '{{baseUrl}}/api/orders/{{orderId}}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Order details contain valid lifecycle state", function () {
+        const res = pm.response.json();
+        pm.expect(res).to.have.property("id");
+        if (pm.collectionVariables.get("orderId")) {
+          pm.expect(res.id).to.eql(pm.collectionVariables.get("orderId"));
+        }
+        pm.expect(res).to.have.property("status");
+        pm.expect(["PENDING", "PREPARING", "SHIPPED", "DELIVERED", "FAILED"]).to.include(res.status);
+      });
+    language: text/javascript
+

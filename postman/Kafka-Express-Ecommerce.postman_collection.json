@@ -1,0 +1,698 @@
+{
+  "info": {
+    "_postman_id": "3f75bbf1-8d9a-475a-b0c5-8bf8eb086c98",
+    "name": "Kafka Express E-Commerce Platform",
+    "description": "# Kafka Express E-Commerce Platform API Collection\n\nEvent-driven microservices e-commerce platform communicating asynchronously via Apache Kafka with JWT authentication, role-based access control (RBAC), Elasticsearch full-text indexing, Prometheus metrics, and Server-Sent Events (SSE).\n\n## Architecture Overview\n- **API Gateway (`:8000`)**: Single reverse proxy entry point. Verifies JWT Bearer tokens and injects trusted internal headers (`x-user-id`, `x-user-email`, `x-user-role`).\n- **Auth Service (`:3006`)**: User registration, login, JWT access tokens (15m expiry), and Redis-backed refresh tokens (7d TTL).\n- **Product Service (`:3007`)**: Catalog search and product management. Public read access, admin-only write operations.\n- **Order Service (`:3001`)**: Order checkout, state tracking, and SSE status streaming (`/api/events`). Emits `OrderCreatedEvent` to Kafka topic `orders`.\n- **Payment Service (`:3002`)**: Kafka worker consuming `orders`. Simulates payments with retry backoff and DLQ routing.\n- **Delivery Service (`:3003`)**: Kafka worker consuming `payments`. Updates status through PREPARING -> SHIPPED -> DELIVERED.\n- **Search Service (`:3005`)**: Elasticsearch indexer and full-text search engine.\n- **Analytics Service (`:3004`)**: Real-time sliding window aggregations and Prometheus metrics exporter.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000", "type": "string" },
+    { "key": "authServiceUrl", "value": "http://localhost:3006", "type": "string" },
+    { "key": "orderServiceUrl", "value": "http://localhost:3001", "type": "string" },
+    { "key": "productServiceUrl", "value": "http://localhost:3007", "type": "string" },
+    { "key": "searchServiceUrl", "value": "http://localhost:3005", "type": "string" },
+    { "key": "analyticsServiceUrl", "value": "http://localhost:3004", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "productId", "value": "", "type": "string" },
+    { "key": "productId2", "value": "", "type": "string" },
+    { "key": "orderId", "value": "", "type": "string" },
+    { "key": "adminEmail", "value": "admin@kafkashop.com", "type": "string" },
+    { "key": "adminPassword", "value": "admin123", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health Checks",
+      "description": "Availability checks across all microservices and edge gateway.",
+      "item": [
+        {
+          "name": "API Gateway Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"API Gateway is healthy\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.status).to.eql(\"ok\");",
+                  "  pm.expect(res.service).to.eql(\"api-gateway\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/health",
+            "description": "Pings the API Gateway service on port 8000 to verify routing infrastructure."
+          }
+        },
+        {
+          "name": "Auth Service Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Auth service is healthy\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.status).to.eql(\"ok\");",
+                  "  pm.expect(res.service).to.eql(\"auth-service\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{authServiceUrl}}/health",
+            "description": "Pings the Auth Service directly on port 3006."
+          }
+        },
+        {
+          "name": "Order Service Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Order service is healthy\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.status).to.eql(\"ok\");",
+                  "  pm.expect(res.service).to.eql(\"order-service\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{orderServiceUrl}}/health",
+            "description": "Pings the Order Service directly on port 3001."
+          }
+        },
+        {
+          "name": "Product Service Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Product service is healthy\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.status).to.eql(\"ok\");",
+                  "  pm.expect(res.service).to.eql(\"product-service\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{productServiceUrl}}/health",
+            "description": "Pings the Product Service directly on port 3007."
+          }
+        },
+        {
+          "name": "Search Service Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Search service is healthy\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.status).to.eql(\"ok\");",
+                  "  pm.expect(res.service).to.eql(\"search-service\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{searchServiceUrl}}/health",
+            "description": "Pings the Search Service directly on port 3005."
+          }
+        },
+        {
+          "name": "Analytics Service Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Analytics service is healthy\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.status).to.eql(\"ok\");",
+                  "  pm.expect(res.service).to.eql(\"analytics-service\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{analyticsServiceUrl}}/health",
+            "description": "Pings the Analytics Service directly on port 3004."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "description": "Authentication, user registration, JWT generation, and token rotation.",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Response contains user details without password\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res).to.have.property(\"id\");",
+                  "  pm.expect(res).to.have.property(\"email\");",
+                  "  pm.expect(res).to.have.property(\"username\");",
+                  "  pm.expect(res).to.have.property(\"role\");",
+                  "  pm.expect(res).to.not.have.property(\"password\");",
+                  "  pm.expect(res).to.not.have.property(\"passwordHash\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user_{{$timestamp}}\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"user_{{$timestamp}}@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/register",
+            "description": "Creates a new customer account in the system with the default role `user`."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Response contains accessToken and user profile\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res).to.have.property(\"accessToken\");",
+                  "  pm.expect(res).to.have.property(\"user\");",
+                  "  pm.collectionVariables.set(\"accessToken\", res.accessToken);",
+                  "});",
+                  "const cookieVal = pm.cookies.get(\"refreshToken\");",
+                  "if (cookieVal) {",
+                  "  pm.collectionVariables.set(\"refreshToken\", cookieVal);",
+                  "} else {",
+                  "  const setCookie = pm.response.headers.get(\"Set-Cookie\");",
+                  "  if (setCookie) {",
+                  "    const match = setCookie.match(/refreshToken=([^;]+)/);",
+                  "    if (match) pm.collectionVariables.set(\"refreshToken\", match[1]);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "Authenticates user, issues 15-minute JWT access token, and sets Redis refresh token."
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"New access token returned\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res).to.have.property(\"accessToken\");",
+                  "  pm.collectionVariables.set(\"accessToken\", res.accessToken);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/refresh",
+            "description": "Generates a new access token using the Redis refresh session."
+          }
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Logout confirmation message received\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.message).to.eql(\"User logged out\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/auth/logout",
+            "description": "Revokes the Redis refresh token session and clears the client cookie."
+          }
+        },
+        {
+          "name": "Get Current User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"User profile contains expected fields\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res).to.have.property(\"id\");",
+                  "  pm.expect(res).to.have.property(\"email\");",
+                  "  pm.expect(res).to.have.property(\"role\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/me",
+            "description": "Retrieves the authenticated user profile based on Bearer token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "description": "Product catalog browsing, category lookups, and administrator management.",
+      "item": [
+        {
+          "name": "Get Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Products catalog returned successfully\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.success).to.be.true;",
+                  "  pm.expect(res.data).to.be.an(\"array\");",
+                  "  if (res.data.length > 0) pm.collectionVariables.set(\"productId\", res.data[0].id);",
+                  "  if (res.data.length > 1) pm.collectionVariables.set(\"productId2\", res.data[1].id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/products?q=&category=&minPrice=&maxPrice=&inStock=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"],
+              "query": [
+                { "key": "q", "value": "", "disabled": true },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "minPrice", "value": "", "disabled": true },
+                { "key": "maxPrice", "value": "", "disabled": true },
+                { "key": "inStock", "value": "true", "disabled": true }
+              ]
+            },
+            "description": "Retrieves catalog with optional filtering. Automatically captures productId and productId2 for order placement."
+          }
+        },
+        {
+          "name": "Get Product Categories",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Categories array returned successfully\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.success).to.be.true;",
+                  "  pm.expect(res.data).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/products/categories",
+            "description": "Returns a unique list of all categories currently present in the product database."
+          }
+        },
+        {
+          "name": "Get Product by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Product data matches requested ID\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.success).to.be.true;",
+                  "  pm.expect(res.data).to.have.property(\"id\");",
+                  "  if (pm.collectionVariables.get(\"productId\")) {",
+                  "    pm.expect(res.data.id).to.eql(pm.collectionVariables.get(\"productId\"));",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/products/{{productId}}",
+            "description": "Retrieves full product record for the specified UUID path parameter."
+          }
+        },
+        {
+          "name": "Create Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Product created successfully\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.success).to.be.true;",
+                  "  pm.expect(res.data).to.have.property(\"id\");",
+                  "  pm.collectionVariables.set(\"productId\", res.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mechanical Keyboard Pro {{$timestamp}}\",\n  \"price\": 129.99,\n  \"category\": \"Electronics\",\n  \"description\": \"High-performance mechanical keyboard\",\n  \"stock\": 50\n}"
+            },
+            "url": "{{baseUrl}}/api/products",
+            "description": "Adds a new product to the catalog. Requires admin role (x-user-role: admin)."
+          }
+        },
+        {
+          "name": "Update Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Product updated successfully\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.success).to.be.true;",
+                  "  pm.expect(res.data.price).to.eql(119.99);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Keyboard Pro {{$timestamp}}\",\n  \"price\": 119.99,\n  \"stock\": 45\n}"
+            },
+            "url": "{{baseUrl}}/api/products/{{productId}}",
+            "description": "Updates fields on an existing product. Requires admin role."
+          }
+        },
+        {
+          "name": "Delete Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204 No Content\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/products/{{productId}}",
+            "description": "Permanently deletes product from catalog. Requires admin role."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "description": "Order placement, listing, and state tracking.",
+      "item": [
+        {
+          "name": "Create Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Order created in PENDING state\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res).to.have.property(\"id\");",
+                  "  pm.expect(res.status).to.eql(\"PENDING\");",
+                  "  pm.collectionVariables.set(\"orderId\", res.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  { \"id\": \"{{productId}}\", \"quantity\": 2 },\n  { \"id\": \"{{productId2}}\", \"quantity\": 1 }\n]"
+            },
+            "url": "{{baseUrl}}/api/orders",
+            "description": "Places order, stores PENDING in PostgreSQL, and produces OrderCreatedEvent to Kafka."
+          }
+        },
+        {
+          "name": "Get My Orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Orders array returned successfully\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/orders",
+            "description": "Lists orders. Normal users receive their own orders; admins receive all platform orders."
+          }
+        },
+        {
+          "name": "Get Order by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Order details contain valid lifecycle state\", function () {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res).to.have.property(\"id\");",
+                  "  if (pm.collectionVariables.get(\"orderId\")) {",
+                  "    pm.expect(res.id).to.eql(pm.collectionVariables.get(\"orderId\"));",
+                  "  }",
+                  "  pm.expect([\"PENDING\", \"PREPARING\", \"SHIPPED\", \"DELIVERED\", \"FAILED\"]).to.include(res.status);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/orders/{{orderId}}",
+            "description": "Fetches detailed order status and line items for the given order UUID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events (SSE)",
+      "description": "Server-Sent Events streaming real-time status changes from Kafka.",
+      "item": [
+        {
+          "name": "Subscribe to Order Events",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "text/event-stream" },
+              { "key": "Cache-Control", "value": "no-cache" }
+            ],
+            "url": "{{baseUrl}}/api/events",
+            "description": "Establishes a persistent SSE connection streaming real-time order status updates pushed from Kafka."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "description": "Elasticsearch full-text order queries and aggregations.",
+      "item": [
+        {
+          "name": "Search Orders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/search?q=&status=DELIVERED&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search"],
+              "query": [
+                { "key": "q", "value": "", "disabled": true },
+                { "key": "status", "value": "DELIVERED", "disabled": true },
+                { "key": "page", "value": "1", "disabled": true },
+                { "key": "limit", "value": "10", "disabled": true }
+              ]
+            },
+            "description": "Full-text Elasticsearch search across indexed orders."
+          }
+        },
+        {
+          "name": "Get Order Document",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/search/orders/{{orderId}}",
+            "description": "Retrieves the Elasticsearch document for the specified order."
+          }
+        },
+        {
+          "name": "Get Search Aggregations",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/search/stats",
+            "description": "Retrieves aggregate order metrics from Elasticsearch."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "description": "Sliding-window order throughput and Prometheus metrics exporter.",
+      "item": [
+        {
+          "name": "Get Realtime Metrics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/analytics",
+            "description": "Retrieves 1-minute sliding window aggregations."
+          }
+        },
+        {
+          "name": "Get Prometheus Metrics",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": "{{analyticsServiceUrl}}/metrics",
+            "description": "Direct scrape endpoint exposing Prometheus metrics."
+          }
+        }
+      ]
+    }
+  ]
+}

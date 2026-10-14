@@ -1,6 +1,44 @@
 $kind: http-request
+description: |-
+  ### Refresh Expired Access Token
+  Generates a new short-lived JWT access token using the stored refresh token.
+
+  #### Token Mechanism:
+  - The service checks either the `refreshToken` HTTP-only cookie or the JSON body field `refreshToken`.
+  - The refresh token is verified against Redis (`refresh_token:<userId>`).
+  - Upon successful verification, a fresh 15-minute JWT is issued containing user ID, role, and email.
+
+  #### Responses:
+  - `200 OK`: New access token returned (`{ accessToken }`).
+  - `401 Unauthorized`: Missing, expired, or invalid refresh token.
 order: 3000
 method: POST
 url: '{{baseUrl}}/api/auth/refresh'
 auth:
   type: noauth
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "refreshToken": "{{refreshToken}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("New access token returned", function () {
+        const res = pm.response.json();
+        pm.expect(res).to.have.property("accessToken");
+        pm.expect(res.accessToken).to.be.a("string");
+
+        // Update the collection variable with refreshed token
+        pm.collectionVariables.set("accessToken", res.accessToken);
+      });
+    language: text/javascript
+

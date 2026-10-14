@@ -1,4 +1,29 @@
 $kind: http-request
+description: |-
+  ### Delete Product by ID (Admin Only)
+  Permanently removes a product from the database catalog. Requires an authenticated `admin` user.
+
+  #### Authorization:
+  - Header: `Authorization: Bearer {{accessToken}}`
+  - Requires admin role (`x-user-role: admin`).
+
+  #### Path Parameters:
+  - `productId` (UUID, required): The unique identifier of the product to delete.
+
+  #### Responses:
+  - `204 No Content`: Product deleted successfully (empty body).
+  - `400 Bad Request`: Invalid UUID parameter.
+  - `401 Unauthorized`: Missing or invalid Bearer token.
+  - `403 Forbidden`: User is not an admin.
+  - `404 Not Found`: Product not found.
 order: 6000
 method: DELETE
 url: '{{baseUrl}}/api/products/{{productId}}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 204 No Content", function () {
+        pm.response.to.have.status(204);
+      });
+    language: text/javascript
+

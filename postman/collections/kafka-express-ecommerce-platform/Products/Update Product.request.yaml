@@ -1,4 +1,18 @@
 $kind: http-request
+description: |-
+  ### Update Existing Product (Admin Only)
+  Updates fields on an existing catalog product. Supports partial updates for name, price, stock, description, or category. Requires `admin` role privileges.
+
+  #### Authorization:
+  - Header: `Authorization: Bearer {{accessToken}}`
+  - Requires admin role (`x-user-role: admin`).
+
+  #### Responses:
+  - `200 OK`: Returns `{ success: true, data: { ...updatedProduct } }`.
+  - `400 Bad Request`: Validation failure.
+  - `401 Unauthorized`: Missing or invalid Bearer token.
+  - `403 Forbidden`: User is not an admin.
+  - `404 Not Found`: Product not found.
 order: 5000
 method: PUT
 url: '{{baseUrl}}/api/products/{{productId}}'
@@ -9,7 +23,23 @@ body:
   type: json
   content: |-
     {
-      "name": "Updated Product Name",
-      "price": 24.99,
-      "stock": 150
+      "name": "Updated Keyboard Pro {{$timestamp}}",
+      "price": 119.99,
+      "stock": 45
     }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Product updated successfully", function () {
+        const res = pm.response.json();
+        pm.expect(res.success).to.be.true;
+        pm.expect(res.data).to.have.property("id");
+        pm.expect(res.data.price).to.eql(119.99);
+        pm.expect(res.data.stock).to.eql(45);
+      });
+    language: text/javascript
+

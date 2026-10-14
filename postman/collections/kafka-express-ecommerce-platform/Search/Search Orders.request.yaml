@@ -1,0 +1,37 @@
+$kind: http-request
+description: |-
+  ### Full-Text Order Search (Elasticsearch)
+  Executes a full-text query across indexed orders in Elasticsearch. Allows filtering by status, matching against customer details or item descriptions, and paginating through results.
+
+  #### Query Parameters:
+  - `q` (string, optional): Full-text query string (matches order items, courier name, etc.).
+  - `status` (string, optional): Filter by order status (`PENDING`, `PREPARING`, `SHIPPED`, `DELIVERED`, `FAILED`).
+  - `page` (integer, optional): Page number (default: `1`).
+  - `limit` (integer, optional): Items per page (default: `10`).
+
+  #### Responses:
+  - `200 OK`: Returns paginated search results with total hit counts.
+  - `401 Unauthorized`: Missing or invalid Bearer token.
+order: 1000
+method: GET
+url: "{{baseUrl}}/api/search"
+queryParams:
+  - key: q
+    value: ""
+    disabled: true
+  - key: status
+    value: "DELIVERED"
+    disabled: true
+  - key: page
+    value: "1"
+    disabled: true
+  - key: limit
+    value: "10"
+    disabled: true
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK or 503 if ES initializing", function () {
+        pm.expect([200, 503]).to.include(pm.response.code);
+      });
+    language: text/javascript

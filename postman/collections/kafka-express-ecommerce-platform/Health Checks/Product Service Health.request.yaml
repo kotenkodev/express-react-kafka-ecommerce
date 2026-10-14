@@ -1,9 +1,16 @@
 $kind: http-request
+description: |-
+  ### Product Service Health Check
+  Pings the Product Service directly on port `3007` to verify catalog service health and database availability.
+
+  #### Responses:
+  - `200 OK`: Returns `{ "status": "ok", "service": "product-service" }`.
 order: 4000
 method: GET
 url: "{{productServiceUrl}}/health"
 auth:
   type: noauth
+
 scripts:
   - type: afterResponse
     code: |-

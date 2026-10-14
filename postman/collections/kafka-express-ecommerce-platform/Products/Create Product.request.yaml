@@ -1,4 +1,25 @@
 $kind: http-request
+description: |-
+  ### Create New Product (Admin Only)
+  Adds a new product to the catalog. Requires an authenticated user with the `admin` role.
+
+  #### Authorization & Security:
+  - Header: `Authorization: Bearer {{accessToken}}`
+  - Gateway validates JWT role and injects `x-user-role: admin`.
+  - The `adminOnly` middleware rejects requests without `x-user-role === 'admin'` with HTTP 403 Forbidden.
+
+  #### Request Body Parameters:
+  - `name` (string, required): Product title (min 3 chars).
+  - `price` (number, required): Positive unit price (`> 0`).
+  - `category` (string, required): Category classification.
+  - `description` (string, optional): Product overview.
+  - `stock` (integer, required): Non-negative available inventory (`>= 0`).
+
+  #### Responses:
+  - `201 Created`: Returns `{ success: true, data: { id, name, price, category, stock, ... } }`.
+  - `400 Bad Request`: Validation failure.
+  - `401 Unauthorized`: Missing or invalid Bearer token.
+  - `403 Forbidden`: Authenticated user lacks `admin` privileges.
 order: 4000
 method: POST
 url: '{{baseUrl}}/api/products'
@@ -9,9 +30,28 @@ body:
   type: json
   content: |-
     {
-      "name": "Sample Product",
-      "price": 29.99,
+      "name": "Mechanical Keyboard Pro {{$timestamp}}",
+      "price": 129.99,
       "category": "Electronics",
-      "description": "A sample product description",
-      "stock": 100
+      "description": "High-performance hot-swappable mechanical keyboard",
+      "stock": 50
     }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201 Created", function () {
+        pm.response.to.have.status(201);
+      });
+
+      pm.test("Product created successfully", function () {
+        const res = pm.response.json();
+        pm.expect(res.success).to.be.true;
+        pm.expect(res.data).to.have.property("id");
+        pm.expect(res.data).to.have.property("name");
+        pm.expect(res.data.price).to.eql(129.99);
+
+        // Store new product ID into collection variables
+        pm.collectionVariables.set("productId", res.data.id);
+      });
+    language: text/javascript
+

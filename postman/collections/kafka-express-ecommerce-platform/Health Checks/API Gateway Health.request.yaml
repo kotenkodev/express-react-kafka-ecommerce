@@ -1,9 +1,16 @@
 $kind: http-request
+description: |-
+  ### API Gateway Health Check
+  Pings the API Gateway service on port `8000` to verify routing infrastructure, proxy middleware, and edge ingress availability.
+
+  #### Responses:
+  - `200 OK`: Returns `{ "status": "ok", "service": "api-gateway" }`.
 order: 1000
 method: GET
 url: "{{baseUrl}}/health"
 auth:
   type: noauth
+
 scripts:
   - type: afterResponse
     code: |-

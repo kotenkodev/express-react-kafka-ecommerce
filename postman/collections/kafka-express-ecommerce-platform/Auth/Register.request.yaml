@@ -1,4 +1,19 @@
 $kind: http-request
+description: |-
+  ### Register New User
+  Creates a new customer account in the system with the default role `user`.
+
+  #### Request Body Parameters:
+  - `username` (string, required): 3–50 alphanumeric characters.
+  - `email` (string, required): Valid unique email address.
+  - `password` (string, required): Minimum 6 characters (hashed with bcrypt with 12 salt rounds before storage).
+  - `firstName` (string, optional): User's given name.
+  - `lastName` (string, optional): User's family name.
+
+  #### Responses:
+  - `201 Created`: User created successfully. Returns user object without password hash.
+  - `400 Bad Request`: Validation failure (invalid email format, short password, etc.).
+  - `409 Conflict`: User with this email already exists.
 order: 1000
 method: POST
 url: '{{baseUrl}}/api/auth/register'
@@ -11,9 +26,27 @@ body:
   type: json
   content: |-
     {
-      "username": "johndoe",
+      "username": "user_{{$timestamp}}",
       "firstName": "John",
       "lastName": "Doe",
-      "email": "john@example.com",
-      "password": "Password1!"
+      "email": "user_{{$timestamp}}@example.com",
+      "password": "Password123!"
     }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 201 Created", function () {
+        pm.response.to.have.status(201);
+      });
+
+      pm.test("Response contains user details without password", function () {
+        const res = pm.response.json();
+        pm.expect(res).to.have.property("id");
+        pm.expect(res).to.have.property("email");
+        pm.expect(res).to.have.property("username");
+        pm.expect(res).to.have.property("role");
+        pm.expect(res).to.not.have.property("password");
+        pm.expect(res).to.not.have.property("passwordHash");
+      });
+    language: text/javascript
+

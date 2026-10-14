@@ -1,6 +1,38 @@
 $kind: http-request
+description: |-
+  ### Revoke Session & Logout
+  Logs out the user by revoking the refresh token session from Redis and clearing the HTTP-only cookie.
+
+  #### Revocation Flow:
+  - If a refresh token is supplied in cookies or the JSON request body, its session key `refresh_token:<userId>` is deleted from Redis.
+  - The client's HTTP-only cookie is cleared via `Set-Cookie: refreshToken=; Max-Age=0`.
+
+  #### Responses:
+  - `200 OK`: Successful logout (`{ message: "User logged out" }`).
 order: 4000
 method: POST
 url: '{{baseUrl}}/api/auth/logout'
 auth:
   type: noauth
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "refreshToken": "{{refreshToken}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Logout confirmation message received", function () {
+        const res = pm.response.json();
+        pm.expect(res.message).to.eql("User logged out");
+      });
+    language: text/javascript
+

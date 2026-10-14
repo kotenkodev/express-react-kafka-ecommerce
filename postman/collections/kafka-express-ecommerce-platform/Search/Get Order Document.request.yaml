@@ -1,0 +1,25 @@
+$kind: http-request
+description: |-
+  ### Get Order Document from Elasticsearch
+  Fetches the raw indexed document for a specific order ID directly from the Elasticsearch `orders` index.
+
+  #### Path Parameters:
+  - `orderId` (UUID, required): The unique order identifier.
+
+  #### Document Model:
+  Contains the merged state from `orders`, `payments`, `order.status.updated`, and DLQ topics.
+
+  #### Responses:
+  - `200 OK`: Returns Elasticsearch document source.
+  - `401 Unauthorized`: Missing or invalid Bearer token.
+  - `404 Not Found`: Order document not found in search index.
+order: 2000
+method: GET
+url: "{{baseUrl}}/api/search/orders/{{orderId}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK or 404/503", function () {
+        pm.expect([200, 404, 503]).to.include(pm.response.code);
+      });
+    language: text/javascript

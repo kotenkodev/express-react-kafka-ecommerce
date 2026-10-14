@@ -15,6 +15,7 @@
     "dev": "docker compose up --build",
     "down": "docker compose down -v",
     "db:push": "prisma db push --schema=./shared/prisma/schema.prisma",
-    "db:seed": "npm --prefix shared run db:seed"
+    "db:seed": "npm --prefix shared run db:seed",
+    "test:postman": "newman run postman/Kafka-Express-Ecommerce.postman_collection.json -e postman/Local-Development.postman_environment.json"
   }
 }

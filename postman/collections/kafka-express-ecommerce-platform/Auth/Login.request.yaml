@@ -1,11 +1,28 @@
 $kind: http-request
+description: |-
+  ### Authenticate & Obtain JWT Tokens
+  Authenticates a user using either `username` or `email` plus `password`. Upon success, returns an ephemeral JWT access token (15-minute validity) and sets an HTTP-only refresh token (7-day validity stored in Redis key `refresh_token:<userId>`).
+
+  #### Default Seed Accounts:
+  - **Administrator**: `admin@kafkashop.com` (or username `admin`) / `admin123`
+  - **Customer**: Registered accounts created via `POST /api/auth/register`
+
+  #### Automatic Postman Script Behavior:
+  - Saves `accessToken` to collection variables for bearer authentication across subsequent requests.
+  - Extracts and saves `refreshToken` from the `Set-Cookie` header / cookie store for token rotation tests.
+
+  #### Responses:
+  - `200 OK`: Authentication successful (`{ accessToken, user }`).
+  - `400 Bad Request`: Validation failure (missing required identifier or password).
+  - `401 Unauthorized`: Invalid credentials or password.
 order: 2000
 method: POST
 url: "{{baseUrl}}/api/auth/login"
 auth:
   type: noauth
 headers:
-  Content-Type: application/json
+  - key: Content-Type
+    value: application/json
 body:
   type: json
   content: |-
@@ -16,8 +33,33 @@ body:
 scripts:
   - type: afterResponse
     code: |-
-      const res = pm.response.json();
-      if (res.accessToken) {
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Response contains accessToken and user profile", function () {
+        const res = pm.response.json();
+        pm.expect(res).to.have.property("accessToken");
+        pm.expect(res).to.have.property("user");
+        pm.expect(res.user).to.have.property("id");
+        pm.expect(res.user).to.have.property("role");
+
+        // Save access token for collection requests
         pm.collectionVariables.set("accessToken", res.accessToken);
+      });
+
+      // Extract refresh token from cookie or Set-Cookie header
+      const cookieVal = pm.cookies.get("refreshToken");
+      if (cookieVal) {
+        pm.collectionVariables.set("refreshToken", cookieVal);
+      } else {
+        const setCookie = pm.response.headers.get("Set-Cookie");
+        if (setCookie) {
+          const match = setCookie.match(/refreshToken=([^;]+)/);
+          if (match) {
+            pm.collectionVariables.set("refreshToken", match[1]);
+          }
+        }
       }
     language: text/javascript
+

@@ -1,7 +1,37 @@
 $kind: http-request
-description: ""
+description: |-
+  ### Get Product Details by ID
+  Retrieves complete product record for the specified UUID path parameter.
+
+  #### Path Parameters:
+  - `productId` (UUID, required): The unique identifier of the product.
+
+  #### Responses:
+  - `200 OK`: Returns `{ success: true, data: { id, name, price, category, description, stock, createdAt, updatedAt } }`.
+  - `400 Bad Request`: Invalid UUID parameter format.
+  - `404 Not Found`: Product with the specified ID does not exist.
 order: 3000
 method: GET
 url: "{{baseUrl}}/api/products/{{productId}}"
 auth:
   type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Product data matches requested ID", function () {
+        const res = pm.response.json();
+        pm.expect(res.success).to.be.true;
+        pm.expect(res.data).to.have.property("id");
+        if (pm.collectionVariables.get("productId")) {
+          pm.expect(res.data.id).to.eql(pm.collectionVariables.get("productId"));
+        }
+        pm.expect(res.data).to.have.property("name");
+        pm.expect(res.data).to.have.property("price");
+        pm.expect(res.data).to.have.property("stock");
+      });
+    language: text/javascript
+

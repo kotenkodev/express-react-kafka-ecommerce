@@ -1,4 +1,26 @@
 $kind: http-request
+description: |-
+  ### List Orders (Role-Filtered)
+  Retrieves order history with built-in role segregation enforced at the API Gateway:
+  - **Regular User (`user`)**: Receives only orders owned by the authenticated user (`userId` matched against `x-user-id`).
+  - **Administrator (`admin`)**: Receives all orders placed across the entire platform.
+
+  #### Responses:
+  - `200 OK`: Returns list of order records (`[ { id, userId, status, totalAmount, items, createdAt }, ... ]`).
+  - `401 Unauthorized`: Missing or invalid Bearer token.
 order: 2000
 method: GET
 url: '{{baseUrl}}/api/orders'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Orders array returned successfully", function () {
+        const res = pm.response.json();
+        pm.expect(res).to.be.an("array");
+      });
+    language: text/javascript
+

@@ -1,9 +1,16 @@
 $kind: http-request
+description: |-
+  ### Auth Service Health Check
+  Pings the Auth Service directly on port `3006` to verify service readiness and database/Redis connectivity.
+
+  #### Responses:
+  - `200 OK`: Returns `{ "status": "ok", "service": "auth-service" }`.
 order: 2000
 method: GET
 url: "{{authServiceUrl}}/health"
 auth:
   type: noauth
+
 scripts:
   - type: afterResponse
     code: |-

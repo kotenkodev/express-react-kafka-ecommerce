@@ -1,12 +1,44 @@
 $kind: collection
 name: Kafka Express E-Commerce Platform
+description: |-
+  # Kafka Express E-Commerce Platform API Collection
+
+  Event-driven microservices e-commerce platform communicating asynchronously via Apache Kafka with JWT authentication, role-based access control (RBAC), Elasticsearch full-text indexing, Prometheus metrics, and Server-Sent Events (SSE).
+
+  ## Architecture Overview
+  - **API Gateway (`:8000`)**: Single reverse proxy entry point. Verifies JWT Bearer tokens and injects trusted internal headers (`x-user-id`, `x-user-email`, `x-user-role`).
+  - **Auth Service (`:3006`)**: User registration, login, JWT access tokens (15m expiry), and Redis-backed refresh tokens (7d TTL).
+  - **Product Service (`:3007`)**: Catalog search and product management. Public read access, admin-only write operations.
+  - **Order Service (`:3001`)**: Order checkout, state tracking, and SSE status streaming (`/api/events`). Emits `OrderCreatedEvent` to Kafka topic `orders`.
+  - **Payment Service (`:3002`)**: Kafka worker consuming `orders`. Simulates payments with retry backoff and DLQ routing.
+  - **Delivery Service (`:3003`)**: Kafka worker consuming `payments`. Updates status through PREPARING -> SHIPPED -> DELIVERED.
+  - **Search Service (`:3005`)**: Elasticsearch indexer and full-text search engine.
+  - **Analytics Service (`:3004`)**: Real-time sliding window aggregations and Prometheus metrics exporter.
+
+  ## Automated Test Flow & Chaining
+  This collection is designed to run sequentially (e.g., via Postman Runner or Newman):
+  1. **Health Checks**: Verify service availability.
+  2. **Auth / Login**: Stores `accessToken` and `refreshToken` into collection variables.
+  3. **Products / Get Products**: Automatically captures `productId` and `productId2`.
+  4. **Orders / Create Order**: Automatically captures `orderId`.
+  5. **Orders / Get Order by ID**: Validates the newly created order.
+  6. **Events / Subscribe**: Live SSE stream tracking order updates.
 variables:
   baseUrl: http://localhost:8000
+  authServiceUrl: http://localhost:3006
+  productServiceUrl: http://localhost:3007
+  orderServiceUrl: http://localhost:3001
+  analyticsServiceUrl: http://localhost:3004
+  searchServiceUrl: http://localhost:3005
   accessToken: ""
+  refreshToken: ""
   productId: ""
   productId2: ""
   orderId: ""
+  adminEmail: admin@kafkashop.com
+  adminPassword: admin123
 auth:
   type: bearer
   credentials:
     token: "{{accessToken}}"
+

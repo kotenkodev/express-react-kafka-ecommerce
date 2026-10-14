@@ -1,9 +1,16 @@
 $kind: http-request
+description: |-
+  ### Analytics Service Health Check
+  Pings the Analytics Service directly on port `3004` to verify metrics pipeline and sliding-window event aggregation health.
+
+  #### Responses:
+  - `200 OK`: Returns `{ "status": "ok", "service": "analytics-service" }`.
 order: 6000
 method: GET
 url: "{{analyticsServiceUrl}}/health"
 auth:
   type: noauth
+
 scripts:
   - type: afterResponse
     code: |-

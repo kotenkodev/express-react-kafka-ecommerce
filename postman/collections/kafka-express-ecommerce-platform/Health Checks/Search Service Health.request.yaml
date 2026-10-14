@@ -1,9 +1,16 @@
 $kind: http-request
+description: |-
+  ### Search Service Health Check
+  Pings the Search Service directly on port `3005` to verify operational status and Elasticsearch client availability.
+
+  #### Responses:
+  - `200 OK`: Returns `{ "status": "ok", "service": "search-service" }`.
 order: 5000
 method: GET
 url: "{{searchServiceUrl}}/health"
 auth:
   type: noauth
+
 scripts:
   - type: afterResponse
     code: |-

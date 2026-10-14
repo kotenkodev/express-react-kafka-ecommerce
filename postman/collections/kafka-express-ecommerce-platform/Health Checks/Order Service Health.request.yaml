@@ -1,9 +1,16 @@
 $kind: http-request
+description: |-
+  ### Order Service Health Check
+  Pings the Order Service directly on port `3001` to verify operational status, Kafka producer readiness, and PostgreSQL connectivity.
+
+  #### Responses:
+  - `200 OK`: Returns `{ "status": "ok", "service": "order-service" }`.
 order: 3000
 method: GET
 url: "{{orderServiceUrl}}/health"
 auth:
   type: noauth
+
 scripts:
   - type: afterResponse
     code: |-

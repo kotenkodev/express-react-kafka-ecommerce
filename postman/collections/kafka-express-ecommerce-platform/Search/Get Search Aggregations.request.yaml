@@ -1,0 +1,21 @@
+$kind: http-request
+description: |-
+  ### Get Search Aggregations & Stats
+  Retrieves real-time analytics aggregated from Elasticsearch index queries:
+  - `totalOrders`: Total number of orders placed.
+  - `totalRevenue`: Sum of revenue across all processed orders.
+  - `avgOrderAmount`: Average basket checkout size.
+
+  #### Responses:
+  - `200 OK`: Returns aggregation results (`{ totalOrders, totalRevenue, avgOrderAmount }`).
+  - `401 Unauthorized`: Missing or invalid Bearer token.
+order: 3000
+method: GET
+url: "{{baseUrl}}/api/search/stats"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK or 503", function () {
+        pm.expect([200, 503]).to.include(pm.response.code);
+      });
+    language: text/javascript

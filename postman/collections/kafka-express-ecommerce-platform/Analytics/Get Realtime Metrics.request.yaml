@@ -1,0 +1,24 @@
+$kind: http-request
+description: |-
+  ### Get Real-Time Sliding Window Analytics
+  Retrieves real-time aggregated throughput metrics computed over a 1-minute tumbling/sliding window by `analytics-service`.
+
+  #### Metrics Included:
+  - `ordersCount`: Number of orders processed in the window.
+  - `totalRevenue`: Gross merchandise value processed.
+  - `successRate`: Percentage of successful payments vs failures (target ~80%).
+  - `avgProcessingMs`: Mean latency of order completion from creation to fulfillment.
+
+  #### Responses:
+  - `200 OK`: Returns window analytics payload.
+  - `401 Unauthorized`: Missing or invalid Bearer token.
+order: 1000
+method: GET
+url: "{{baseUrl}}/api/analytics"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK or 503", function () {
+        pm.expect([200, 503]).to.include(pm.response.code);
+      });
+    language: text/javascript

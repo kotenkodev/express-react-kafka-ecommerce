@@ -1,4 +1,20 @@
 $kind: http-request
+description: |-
+  ### Get Product Catalog
+  Retrieves a list of available products with optional filtering by search keyword, category, price range, and stock availability. This endpoint is publicly accessible without authentication.
+
+  #### Query Parameters:
+  - `q` (string, optional): Search keyword matched against product name or description.
+  - `category` (string, optional): Filter by category name (e.g., `Electronics`, `Clothing`).
+  - `minPrice` (number, optional): Minimum price filter.
+  - `maxPrice` (number, optional): Maximum price filter.
+  - `inStock` (boolean, optional): Set to `true` to return only items with `stock > 0`.
+
+  #### Automatic Postman Script Behavior:
+  - Captures the first two product IDs and assigns them to `productId` and `productId2` in collection variables for subsequent order creation tests.
+
+  #### Responses:
+  - `200 OK`: Returns `{ success: true, data: [ ...products ] }`.
 order: 1000
 method: GET
 url: '{{baseUrl}}/api/products'
@@ -20,3 +36,25 @@ queryParams:
   - key: inStock
     value: 'true'
     disabled: true
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Products catalog returned successfully", function () {
+        const res = pm.response.json();
+        pm.expect(res.success).to.be.true;
+        pm.expect(res.data).to.be.an("array");
+
+        // Automatically store product IDs for downstream order testing
+        if (res.data.length > 0) {
+          pm.collectionVariables.set("productId", res.data[0].id);
+        }
+        if (res.data.length > 1) {
+          pm.collectionVariables.set("productId2", res.data[1].id);
+        }
+      });
+    language: text/javascript
+

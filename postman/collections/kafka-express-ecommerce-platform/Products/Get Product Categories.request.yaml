@@ -1,6 +1,26 @@
 $kind: http-request
+description: |-
+  ### Get Distinct Product Categories
+  Returns a unique list of all categories currently present in the product database. Used by client applications for category filter dropdowns and navigation chips.
+
+  #### Responses:
+  - `200 OK`: Returns `{ success: true, data: [ "Electronics", "Books", ... ] }`.
 order: 2000
 method: GET
 url: '{{baseUrl}}/api/products/categories'
 auth:
   type: noauth
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200 OK", function () {
+        pm.response.to.have.status(200);
+      });
+
+      pm.test("Categories array returned successfully", function () {
+        const res = pm.response.json();
+        pm.expect(res.success).to.be.true;
+        pm.expect(res.data).to.be.an("array");
+      });
+    language: text/javascript
+
