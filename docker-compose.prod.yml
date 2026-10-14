@@ -179,6 +179,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3006
+      TRUST_PROXY: loopback,uniquelocal
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET}
@@ -380,6 +381,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 8000
+      TRUST_PROXY: loopback,uniquelocal
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost}
       JWT_SECRET: ${JWT_SECRET}
       AUTH_SERVICE_URL: http://auth-service:3006

@@ -13,6 +13,7 @@ const schema = z.object({
   ANALYTICS_SERVICE_URL: z.string().url(),
   JWT_SECRET: z.string().min(16),
   CORS_ORIGINS: z.string().optional(),
+  TRUST_PROXY: z.string().default(""),
 });
 
 const raw = schema.parse(process.env);
@@ -26,6 +27,7 @@ export const env = {
   searchServiceUrl: raw.SEARCH_SERVICE_URL,
   analyticsServiceUrl: raw.ANALYTICS_SERVICE_URL,
   jwtSecret: raw.JWT_SECRET,
+  trustProxy: raw.TRUST_PROXY.split(",").map((value) => value.trim()).filter(Boolean),
   corsOrigins: raw.CORS_ORIGINS?.split(",").map((o) => o.trim()) || [
     "http://localhost:5173",
   ],

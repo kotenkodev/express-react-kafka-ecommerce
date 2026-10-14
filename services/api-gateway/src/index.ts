@@ -12,6 +12,7 @@ import { env } from "./config/env";
 import { errorHandler } from "@ecommerce/shared";
 
 const app = express();
+app.set("trust proxy", env.trustProxy);
 
 const PORT = env.port;
 const SERVICES = {

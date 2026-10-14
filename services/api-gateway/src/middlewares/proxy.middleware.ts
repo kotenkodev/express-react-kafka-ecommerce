@@ -13,6 +13,7 @@ export const createGatewayProxy = (target: string, stripPrefix = true) => {
     on: {
       proxyReq: (proxyReq: ClientRequest, req: IncomingMessage) => {
         const expressReq = req as unknown as Request;
+        proxyReq.setHeader("x-forwarded-for", expressReq.ip || req.socket.remoteAddress || "");
         if (expressReq.user) {
           proxyReq.setHeader("x-user-id", String(expressReq.user.id));
           if (expressReq.user.email) {
