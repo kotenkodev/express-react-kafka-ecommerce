@@ -15,11 +15,13 @@ enum Role {
 enum OrderStatus {
   PENDING
   PAID
-  PACKAGING
-  SHIPPING
+  PREPARING
+  SHIPPED
   DELIVERED
   FAILED
   CANCELED
+  PACKAGING
+  SHIPPING
 }
 
 enum PaymentStatus {
@@ -74,6 +76,9 @@ model Order {
   totalAmount   Decimal       @db.Decimal(12, 2)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+
+  courier         String?
+  statusUpdatedAt DateTime?
 }
 
 model OrderItem {

@@ -1,32 +1,41 @@
-import { OrderStatus, PaymentStatus, Product } from "@prisma/client";
-
 export type OrderCreated = {
   orderId: string;
   userId: string;
-  items: Product[];
+  items: {
+    productId: string;
+    quantity: number;
+    price: number;
+  }[];
   totalAmount: number;
-  createdAt: Date;
+  createdAt: string;
 };
 
 export type PaymentProcessed = {
-  paymendId: string;
+  paymentId: string;
   orderId: string;
-  status: PaymentStatus;
-  processedAt: Date;
+  status: "SUCCESS" | "FAILED";
+  processedAt: string;
   failureReason: string | null;
 };
 
 export type OrderStatusUpdated = {
   orderId: string;
-  status: OrderStatus;
+  status: "PREPARING" | "SHIPPED" | "DELIVERED";
   courier: string;
-  updatedAt: Date;
+  updatedAt: string;
 };
 
 export type OrderStats = {
-  windowStart: Date;
-  orderCount: number;
+  windowStart: string;
+  ordersCount: number;
   totalRevenue: number;
   successRate: number;
   avgProcessingMs: number;
+};
+
+export type DeadLetterMessage<T> = {
+  originalMessage: T;
+  error: string;
+  retryCount: number;
+  failedAt: string;
 };
