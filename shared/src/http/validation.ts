@@ -21,8 +21,9 @@ export function validate(schemas: ValidationSchemas): RequestHandler {
 
       if (!result.success) {
         errors[source] = result.error.flatten();
+      } else if (source === "query") {
+        res.locals.query = result.data;
       } else {
-        // Assign coerced, trimmed, and sanitized data back to req
         req[source] = result.data;
       }
     }

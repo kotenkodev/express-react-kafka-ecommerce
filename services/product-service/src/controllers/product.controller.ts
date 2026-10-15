@@ -9,7 +9,7 @@ import {
 
 export class ProductController {
   async getProducts(req: Request, res: Response) {
-    const query = req.query as ProductQueryInput;
+    const query = res.locals.query as ProductQueryInput;
 
     const products = await productService.getProducts(query);
     res.status(200).json({ success: true, data: products });

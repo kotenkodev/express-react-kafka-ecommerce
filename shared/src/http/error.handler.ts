@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from "express";
+import { HttpError } from "./error";
 
 export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
   if (res.headersSent) {
@@ -11,6 +12,15 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
     return;
   }
 
-  console.error("[Auth Service] Request failed:", error);
+  if (
+    error instanceof HttpError &&
+    Number.isInteger(error.statusCode) &&
+    error.statusCode >= 400 && error.statusCode <= 599
+  ) {
+    res.status(error.statusCode).json({ error: error.message });
+    return;
+  }
+
+  console.error("[HTTP] Request failed:", error);
   res.status(500).json({ error: "Internal server error" });
 };
