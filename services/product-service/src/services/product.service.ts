@@ -1,11 +1,22 @@
 import { Category, Prisma, prisma } from "@ecommerce/shared";
 import { ProductQueryInput } from "../schemas/product-query.schema";
-import { ProductCreateInput } from "../schemas/product.schema";
+import {
+  ProductCreateInput,
+  ProductUpdateInput,
+} from "../schemas/product.schema";
 import { ProductError } from "../lib/error";
 import { Product } from "@ecommerce/shared";
 
 export class ProductService {
-  async getProducts(query: ProductQueryInput): Promise<Product[]> {
+  async getProducts(query: ProductQueryInput): Promise<{
+    products: Product[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
     const whereStatement: Prisma.ProductWhereInput = {};
 
     if (query.q) {
@@ -23,31 +34,46 @@ export class ProductService {
         },
       };
     }
-    if (query.minPrice) {
+
+    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
       whereStatement.price = {
-        gte: query.minPrice,
+        ...(query.minPrice !== undefined ? { gte: query.minPrice } : {}),
+        ...(query.maxPrice !== undefined ? { lte: query.maxPrice } : {}),
       };
     }
-    if (query.maxPrice) {
-      whereStatement.price = {
-        lte: query.maxPrice,
-      };
-    }
+
     if (query.inStock) {
       whereStatement.stock = {
         gt: 0,
       };
     }
 
-    const products = await prisma.product.findMany({
-      where: whereStatement,
-      include: {
-        category: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const page = query.page ?? 1;
+    const limit = Math.min(query.limit ?? 50, 100);
+    const skip = (page - 1) * limit;
 
-    return products;
+    const [total, products] = await Promise.all([
+      prisma.product.count({ where: whereStatement }),
+      prisma.product.findMany({
+        where: whereStatement,
+        include: {
+          category: true,
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    return {
+      products,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async getCategories(): Promise<Category[]> {
@@ -56,9 +82,8 @@ export class ProductService {
 
   async getProduct(id: string): Promise<Product | null> {
     const product = await prisma.product.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
+      include: { category: true },
     });
 
     if (!product) {
@@ -71,12 +96,17 @@ export class ProductService {
   async createProduct(payload: ProductCreateInput): Promise<Product> {
     const { category, ...body } = payload;
 
+    const existingCategory = await prisma.category.findUnique({
+      where: { name: category },
+    });
+    if (!existingCategory) {
+      throw new ProductError(`Category "${category}" not found`, 400);
+    }
+
     return prisma.product.create({
       data: {
         ...body,
-        category: {
-          connect: { name: category },
-        },
+        categoryId: existingCategory.id,
       },
       include: {
         category: true,
@@ -84,29 +114,38 @@ export class ProductService {
     });
   }
 
-  async updateProduct(id: string, payload: any): Promise<Product> {
-    const { category, ...body } = payload;
-    try {
-      const updatedProduct = await prisma.product.update({
-        where: { id },
-        data: {
-          ...body,
-          ...(category ? { category: { connect: { name: category } } } : {}),
-        },
-        include: {
-          category: true,
-        },
-      });
-      return updatedProduct;
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2025"
-      ) {
-        throw new ProductError(`Product with ID ${id} not found`, 404);
-      }
-      throw error;
+  async updateProduct(
+    id: string,
+    payload: ProductUpdateInput,
+  ): Promise<Product> {
+    const existingProduct = await prisma.product.findUnique({ where: { id } });
+    if (!existingProduct) {
+      throw new ProductError(`Product with ID ${id} not found`, 404);
     }
+
+    const { category, ...body } = payload;
+    let categoryId: string | undefined;
+
+    if (category !== undefined) {
+      const existingCategory = await prisma.category.findUnique({
+        where: { name: category },
+      });
+      if (!existingCategory) {
+        throw new ProductError(`Category "${category}" not found`, 400);
+      }
+      categoryId = existingCategory.id;
+    }
+
+    return prisma.product.update({
+      where: { id },
+      data: {
+        ...body,
+        ...(categoryId ? { categoryId } : {}),
+      },
+      include: {
+        category: true,
+      },
+    });
   }
 
   async deleteProduct(id: string): Promise<void> {
@@ -114,13 +153,17 @@ export class ProductService {
       await prisma.product.delete({
         where: { id },
       });
-      return;
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2025"
-      ) {
-        throw new ProductError(`Product with ID ${id} not found`, 404);
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2025") {
+          throw new ProductError(`Product with ID ${id} not found`, 404);
+        }
+        if (error.code === "P2003") {
+          throw new ProductError(
+            `Cannot delete product with ID ${id} because it is referenced in existing orders`,
+            409,
+          );
+        }
       }
       throw error;
     }

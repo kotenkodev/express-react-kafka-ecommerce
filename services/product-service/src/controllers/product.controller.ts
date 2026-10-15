@@ -10,13 +10,14 @@ import {
 export class ProductController {
   async getProducts(req: Request, res: Response) {
     const query = res.locals.query as ProductQueryInput;
+    const { products, pagination } = await productService.getProducts(query);
 
-    const products = await productService.getProducts(query);
-    res.status(200).json({ success: true, data: products });
+    res.status(200).json({ success: true, data: products, pagination });
   }
 
   async getCategories(_req: Request, res: Response) {
     const categories = await productService.getCategories();
+
     res.status(200).json({ success: true, data: categories });
   }
 
