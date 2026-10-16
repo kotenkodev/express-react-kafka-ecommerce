@@ -1,14 +1,16 @@
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { UserRole } from "@/features/auth/types";
 import { Navigate, Outlet } from "react-router-dom";
 
 interface RoleRouteProps {
-  roles: ("user" | "admin")[];
+  roles: UserRole[];
 }
 
 export default function RoleRoute({ roles }: RoleRouteProps) {
-  const userRole = "user"; // Replace with your actual user role retrieval logic
+  const { user } = useAuthStore();
 
-  if (!roles.includes(userRole)) {
-    return <Navigate to="/login" replace />;
+  if (!user?.role || !roles.includes(user.role)) {
+    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;
