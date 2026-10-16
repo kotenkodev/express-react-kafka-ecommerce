@@ -4,8 +4,8 @@ import dotenv from "dotenv";
 import { env } from "./config/env";
 import {
   errorHandler,
-  httpRequestsTotal,
-  metricsRegistry,
+  httpMetricsMiddleware,
+  metricsHandler,
 } from "@ecommerce/shared";
 import { searchRouter } from "./routes/search.routes";
 import { esClient, initElasticsearch } from "./config/elasticsearch";
@@ -21,16 +21,8 @@ const PORT = env.port;
 app.use(cors());
 app.use(express.json());
 
-app.use((req, res, next) => {
-  res.on("finish", () => {
-    const route = req.baseUrl || req.path || "unknown";
-    httpRequestsTotal.inc({
-      route,
-      status_code: res.statusCode.toString(),
-    });
-  });
-  next();
-});
+app.use(httpMetricsMiddleware);
+app.get("/metrics", metricsHandler);
 
 app.use("/search", searchRouter);
 
@@ -65,7 +57,7 @@ async function shutdown(signal: string) {
 }
 process.once("SIGINT", () => void shutdown("SIGINT"));
 process.once("SIGTERM", () => void shutdown("SIGTERM"));
-// Startup
+
 async function start() {
   try {
     await initElasticsearch();

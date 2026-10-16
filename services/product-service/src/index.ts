@@ -2,7 +2,11 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { productRoutes } from "./routes/product.routes";
-import { errorHandler } from "@ecommerce/shared";
+import {
+  errorHandler,
+  httpMetricsMiddleware,
+  metricsHandler,
+} from "@ecommerce/shared";
 import { env } from "./config/env";
 
 dotenv.config();
@@ -12,6 +16,9 @@ const PORT = env.port;
 
 app.use(cors());
 app.use(express.json());
+
+app.use(httpMetricsMiddleware);
+app.get("/metrics", metricsHandler);
 
 app.use("/products", productRoutes);
 

@@ -6,8 +6,8 @@ import { analyticsRouter } from "./routes/analytics.routes";
 import { createServer } from "http";
 import {
   errorHandler,
-  httpRequestsTotal,
-  metricsRegistry,
+  httpMetricsMiddleware,
+  metricsHandler,
 } from "@ecommerce/shared";
 import { publishOrderStats, statsProducer } from "./producers/stats.producer";
 import { slidingWindowService } from "./services/slidingWindow";
@@ -25,26 +25,13 @@ const PORT = env.port;
 app.use(cors());
 app.use(express.json());
 
-app.use((req, res, next) => {
-  res.on("finish", () => {
-    const route = req.baseUrl || req.path || "unknown";
-    httpRequestsTotal.inc({
-      route,
-      status_code: res.statusCode.toString(),
-    });
-  });
-  next();
-});
+app.use(httpMetricsMiddleware);
+app.get("/metrics", metricsHandler);
 
 app.use("/analytics", analyticsRouter);
 
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: "analytics-service" });
-});
-
-app.get("/metrics", async (_req: Request, res: Response) => {
-  res.setHeader("Content-Type", metricsRegistry.contentType);
-  res.send(await metricsRegistry.metrics());
 });
 
 app.use(errorHandler);

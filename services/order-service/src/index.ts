@@ -6,8 +6,8 @@ import { sseRoutes } from "./routes/sse.routes";
 import {
   errorHandler,
   prisma,
-  metricsRegistry,
-  httpRequestsTotal,
+  httpMetricsMiddleware,
+  metricsHandler,
 } from "@ecommerce/shared";
 import { env } from "./config/env";
 import { orderProducer } from "./producers/order.producer";
@@ -26,16 +26,8 @@ const PORT = env.port;
 app.use(cors());
 app.use(express.json());
 
-app.use((req, res, next) => {
-  res.on("finish", () => {
-    const route = req.baseUrl || req.path || "unknown";
-    httpRequestsTotal.inc({
-      route,
-      status_code: res.statusCode.toString(),
-    });
-  });
-  next();
-});
+app.use(httpMetricsMiddleware);
+app.get("/metrics", metricsHandler);
 
 app.use("/orders", orderRoutes);
 
@@ -43,11 +35,6 @@ app.use("/events", sseRoutes);
 
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: "order-service" });
-});
-
-app.get("/metrics", async (_req: Request, res: Response) => {
-  res.setHeader("Content-Type", metricsRegistry.contentType);
-  res.send(await metricsRegistry.metrics());
 });
 
 app.use(errorHandler);

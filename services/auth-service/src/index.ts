@@ -2,7 +2,11 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import { env } from "./config/env";
 import { authRoutes } from "./routes/auth.routes";
-import { errorHandler } from "@ecommerce/shared";
+import {
+  errorHandler,
+  httpMetricsMiddleware,
+  metricsHandler,
+} from "@ecommerce/shared";
 import cookieParser from "cookie-parser";
 import { connectRedis, disconnectRedis } from "./lib/redis";
 
@@ -12,6 +16,9 @@ app.set("trust proxy", env.trustProxy);
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+
+app.use(httpMetricsMiddleware);
+app.get("/metrics", metricsHandler);
 
 app.use("/auth", authRoutes);
 

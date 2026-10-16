@@ -9,7 +9,12 @@ import {
   createSseProxy,
 } from "./middlewares/proxy.middleware";
 import { env } from "./config/env";
-import { errorHandler } from "@ecommerce/shared";
+import {
+  errorHandler,
+  httpMetricsMiddleware,
+  metricsHandler,
+} from "@ecommerce/shared";
+import { Request, Response } from "express";
 
 const app = express();
 app.set("trust proxy", env.trustProxy);
@@ -29,6 +34,9 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use(httpMetricsMiddleware);
+app.get("/metrics", metricsHandler);
 
 app.use((req, _res, next) => {
   delete req.headers["x-user-id"];

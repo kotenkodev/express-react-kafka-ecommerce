@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { createServer } from "node:http";
 import { env } from "./config/env";
-import { metricsRegistry, httpRequestsTotal } from "@ecommerce/shared";
+import { httpMetricsMiddleware, metricsHandler } from "@ecommerce/shared";
 import { statusProducer } from "./producers/status.producer";
 import {
   paymentConsumer,
@@ -19,24 +19,11 @@ const PORT = env.port;
 app.use(cors());
 app.use(express.json());
 
-app.use((req, res, next) => {
-  res.on("finish", () => {
-    const route = req.baseUrl || req.path || "unknown";
-    httpRequestsTotal.inc({
-      route,
-      status_code: res.statusCode.toString(),
-    });
-  });
-  next();
-});
+app.use(httpMetricsMiddleware);
+app.get("/metrics", metricsHandler);
 
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: "delivery-service" });
-});
-
-app.get("/metrics", async (_req: Request, res: Response) => {
-  res.setHeader("Content-Type", metricsRegistry.contentType);
-  res.send(await metricsRegistry.metrics());
 });
 
 let shuttingDown = false;
