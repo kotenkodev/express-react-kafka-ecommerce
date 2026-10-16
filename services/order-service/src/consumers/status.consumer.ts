@@ -4,14 +4,14 @@ import {
   kafkaMessagesConsumed,
   kafkaConsumerErrors,
 } from "@ecommerce/shared";
-import { env } from "../../config/env";
-import { orderStatusUpdatedSchema } from "../../schemas/order-status.schema";
+import { env } from "../config/env";
+import { orderStatusUpdatedSchema } from "../schemas/order-status.schema";
 import {
   applyOrderDLQ,
   applyOrderStatus,
   applyPaymentStatus,
-} from "../../services/order-status.service";
-import { orderSSEController } from "../../controllers/sse.controller";
+} from "../services/order-status.service";
+import { orderSSEController } from "../controllers/sse.controller";
 import type {
   Order,
   OrderStatusUpdated,

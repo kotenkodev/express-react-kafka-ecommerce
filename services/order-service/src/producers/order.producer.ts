@@ -1,6 +1,10 @@
-import { createKafkaProducer, TOPICS, kafkaMessagesProduced } from "@ecommerce/shared";
+import {
+  createKafkaProducer,
+  TOPICS,
+  kafkaMessagesProduced,
+} from "@ecommerce/shared";
 import type { OrderCreated } from "@ecommerce/shared";
-import { env } from "../../config/env";
+import { env } from "../config/env";
 
 export const orderProducer = createKafkaProducer({
   clientId: "order-service",

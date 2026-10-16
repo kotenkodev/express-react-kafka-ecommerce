@@ -1,6 +1,6 @@
 import { AuthenticatedUser, HttpError, prisma } from "@ecommerce/shared";
 import { OrderCreateInput } from "../schemas/order-create.schema";
-import { publishOrderCreated } from "../kafka/producers/order.producer";
+import { publishOrderCreated } from "../producers/order.producer";
 
 export class OrderService {
   async createOrder(userId: string, items: OrderCreateInput) {

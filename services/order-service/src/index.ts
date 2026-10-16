@@ -3,14 +3,19 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { orderRoutes } from "./routes/order.routes";
 import { sseRoutes } from "./routes/sse.routes";
-import { errorHandler, prisma, metricsRegistry, httpRequestsTotal } from "@ecommerce/shared";
+import {
+  errorHandler,
+  prisma,
+  metricsRegistry,
+  httpRequestsTotal,
+} from "@ecommerce/shared";
 import { env } from "./config/env";
-import { orderProducer } from "./kafka/producers/order.producer";
+import { orderProducer } from "./producers/order.producer";
 import { createServer } from "node:http";
 import {
   statusConsumer,
   startStatusConsumer,
-} from "./kafka/consumers/status.consumer";
+} from "./consumers/status.consumer";
 
 dotenv.config();
 

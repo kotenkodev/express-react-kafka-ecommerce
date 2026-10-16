@@ -9,7 +9,7 @@ import {
 } from "@ecommerce/shared";
 import { searchRouter } from "./routes/search.routes";
 import { esClient, initElasticsearch } from "./config/elasticsearch";
-import { eventConsumer, startEventConsumer } from "./kafka/search.consumer";
+import { eventConsumer, startEventConsumer } from "./consumers/search.consumer";
 import { createServer } from "http";
 
 dotenv.config();
