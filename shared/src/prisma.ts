@@ -20,6 +20,7 @@ export type {
   Order,
   OrderItem,
   Category,
+  OrderStatus,
 } from "@prisma/client";
 
 export const healthCheck = async () => {

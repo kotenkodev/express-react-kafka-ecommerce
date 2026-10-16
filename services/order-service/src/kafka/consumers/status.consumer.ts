@@ -31,17 +31,7 @@ export async function startStatusConsumer(): Promise<void> {
   await statusConsumer.connect();
 
   await statusConsumer.subscribe({
-    topic: TOPICS.ORDER_STATUS_UPDATED,
-    fromBeginning: true,
-  });
-
-  await statusConsumer.subscribe({
-    topic: TOPICS.PAYMENTS,
-    fromBeginning: true,
-  });
-
-  await statusConsumer.subscribe({
-    topic: TOPICS.ORDER_DLQ,
+    topics: [TOPICS.ORDER_STATUS_UPDATED, TOPICS.PAYMENTS, TOPICS.ORDER_DLQ],
     fromBeginning: true,
   });
 
@@ -121,6 +111,8 @@ export async function startStatusConsumer(): Promise<void> {
 
             break;
           }
+          default:
+            console.warn(`[Order Consumer] Unhandled topic: ${topic}`);
         }
       } catch (error) {
         kafkaConsumerErrors.inc({ topic, groupId: "order-service" });

@@ -1,8 +1,13 @@
-import { z, Role, OrderStatus, PaymentStatus, HttpError } from "@ecommerce/shared";
+import { z, Role, HttpError } from "@ecommerce/shared";
 import type {
-  AuthenticatedUser, UserRole, User, Product, Order, OrderItem,
+  AuthenticatedUser,
+  User,
+  Product,
+  Order,
+  OrderItem,
 } from "@ecommerce/shared";
 import type { User as SubpathUser } from "@ecommerce/shared/types";
+import { OrderStatus } from "@prisma/client";
 
 export const schema = z.object({ id: z.number(), role: z.nativeEnum(Role) });
 export const orderStatus: Order["status"] = OrderStatus.PENDING;
