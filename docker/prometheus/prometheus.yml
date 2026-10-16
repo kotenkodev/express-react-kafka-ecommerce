@@ -6,7 +6,35 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  # We will add Node.js microservices here later
-  # - job_name: 'order-service'
-  #   static_configs:
-  #     - targets: ['order-service:3001']
+  - job_name: "order-service"
+    static_configs:
+      - targets: ["order-service:3001"]
+
+  - job_name: "payment-service"
+    static_configs:
+      - targets: ["payment-service:3002"]
+
+  - job_name: "delivery-service"
+    static_configs:
+      - targets: ["delivery-service:3003"]
+
+  - job_name: "analytics-service"
+    static_configs:
+      - targets: ["analytics-service:3004"]
+
+  - job_name: "search-service"
+    static_configs:
+      - targets: ["search-service:3005"]
+
+  - job_name: "auth-service"
+    static_configs:
+      - targets: ["auth-service:3006"]
+
+  - job_name: "product-service"
+    static_configs:
+      - targets: ["product-service:3007"]
+
+  - job_name: "api-gateway"
+    static_configs:
+      - targets: ["api-gateway:8000"]
+
