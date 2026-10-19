@@ -11,6 +11,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import ProductSearchPage from "./pages/ProductSearchPage";
 import MainLayout from "./components/layout/MainLayout";
 import HomeRoute from "./components/guards/HomeRoute";
+import ProductPage from "./pages/ProductPage";
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +31,10 @@ export const router = createBrowserRouter([
           {
             path: "/",
             element: <HomeRoute />,
+          },
+          {
+            path: "/products/:id",
+            element: <ProductPage />,
           },
           {
             path: "/orders",

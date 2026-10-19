@@ -51,7 +51,7 @@ export default function ProductSearchPage() {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
 
-      if (!value || value === "all" || value === false) {
+      if (!value || value === "all") {
         next.delete(key);
       } else {
         next.set(key, String(value));
@@ -214,7 +214,7 @@ export default function ProductSearchPage() {
         </div>
       </section>
 
-      <main className="min-h-[400px]">
+      <main className="min-h-100">
         <ProductGrid
           isLoading={isLoading}
           onAddToCart={addItem}

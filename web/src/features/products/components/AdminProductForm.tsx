@@ -88,12 +88,10 @@ export default function AdminProductForm({
           </DialogDescription>
         </DialogHeader>
 
-        {/* 2. Form takes up available space but hides its own overflow */}
         <form
           onSubmit={formik.handleSubmit}
           className="flex flex-col gap-4 overflow-hidden"
         >
-          {/* 3. The fields container handles the scrolling */}
           <div className="space-y-5 overflow-y-auto px-1 py-2 max-h-[60vh]">
             <div className="grid grid-cols-[1fr_auto] gap-4 items-start">
               <div className="space-y-2">
@@ -228,7 +226,6 @@ export default function AdminProductForm({
             </div>
           </div>
 
-          {/* 4. Footer stays pinned to the bottom of the dialog */}
           <DialogFooter className="pt-4 mt-2 border-t">
             <Button
               type="button"
