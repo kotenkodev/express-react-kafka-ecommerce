@@ -1,3 +1,5 @@
+import { Product } from "../products/types";
+
 export type OrderStatus =
   | "PENDING"
   | "PAID"
@@ -27,6 +29,7 @@ export type Order = {
 export type OrderItem = {
   id: string;
   productId: string;
+  product?: Product | null;
   orderId: string;
   quantity: number;
   unitPrice: number;
