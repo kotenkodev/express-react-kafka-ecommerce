@@ -37,11 +37,13 @@ export default function OrdersPage() {
       }
     };
     void loadData();
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, [retry]);
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-3xl space-y-6">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           {isAdmin ? "All Orders" : "My Orders"}
@@ -59,18 +61,28 @@ export default function OrdersPage() {
             <PackageSearch className="h-7 w-7" aria-hidden="true" />
           </div>
           <h2 className="text-base font-semibold">Orders unavailable</h2>
-          <p role="alert" className="mt-1 max-w-sm text-sm text-muted-foreground">{error}</p>
-          <Button variant="outline" size="sm" className="mt-4 gap-1.5 shadow-2xs" onClick={() => {
-            setError(null);
-            setIsLoading(true);
-            setRetry((value) => value + 1);
-          }}>
+          <p
+            role="alert"
+            className="mt-1 max-w-sm text-sm text-muted-foreground"
+          >
+            {error}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4 gap-1.5 shadow-2xs"
+            onClick={() => {
+              setError(null);
+              setIsLoading(true);
+              setRetry((value) => value + 1);
+            }}
+          >
             <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
             Try again
           </Button>
         </div>
       ) : (
-        <OrderTable orders={orders} isLoading={isLoading} />
+        <OrderTable isAdmin={isAdmin} orders={orders} isLoading={isLoading} />
       )}
     </div>
   );

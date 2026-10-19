@@ -1,4 +1,4 @@
-import { CalendarDays, CreditCard, Package, Truck } from "lucide-react";
+import { CalendarDays, CreditCard, Package, Truck, UserRound } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import type { Order, PaymentStatus } from "../types";
 import { Link } from "react-router-dom";
@@ -6,6 +6,7 @@ import OrderStatusBadge from "./OrderStatusBadge";
 
 interface OrderCardProps {
   order: Order;
+  isAdmin: boolean;
 }
 
 const paymentStyles: Record<PaymentStatus, string> = {
@@ -20,8 +21,15 @@ const paymentLabels: Record<PaymentStatus, string> = {
   FAILED: "Payment failed",
 };
 
-export default function OrderCard({ order }: OrderCardProps) {
-  const itemCount = order.items.reduce((total, item) => total + item.quantity, 0);
+export default function OrderCard({ order, isAdmin }: OrderCardProps) {
+  const itemCount = order.items.reduce(
+    (total, item) => total + item.quantity,
+    0,
+  );
+  const customerName =
+    [order.user?.firstName, order.user?.lastName].filter(Boolean).join(" ") ||
+    order.user?.username ||
+    "Customer unavailable";
 
   return (
     <Card className="gap-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-0 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-md">
@@ -31,7 +39,10 @@ export default function OrderCard({ order }: OrderCardProps) {
             <Package className="h-5 w-5" aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <h2 className="truncate text-sm font-semibold tracking-tight" title={order.id}>
+            <h2
+              className="truncate text-sm font-semibold tracking-tight"
+              title={order.id}
+            >
               Order #{order.id}
             </h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
@@ -41,6 +52,25 @@ export default function OrderCard({ order }: OrderCardProps) {
         </div>
         <OrderStatusBadge status={order.status} />
       </div>
+
+      {isAdmin && (
+        <div className="flex items-center gap-3 border-b border-border/40 bg-muted/10 px-4 py-3 sm:px-5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted/70 text-muted-foreground">
+            <UserRound className="h-4 w-4" aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Customer
+            </p>
+            <p className="break-words text-sm font-medium text-foreground">
+              {customerName}
+            </p>
+            <p className="break-all text-xs text-muted-foreground">
+              {order.user?.email || `User ID: ${order.userId}`}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="max-h-80 overflow-y-auto divide-y divide-border/40 px-4 sm:px-5">
         {order.items.map((item) => (
@@ -53,7 +83,10 @@ export default function OrderCard({ order }: OrderCardProps) {
               {item.product?.emoji ? (
                 <span aria-hidden="true">{item.product.emoji}</span>
               ) : (
-                <Package className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                <Package
+                  className="h-5 w-5 text-muted-foreground"
+                  aria-hidden="true"
+                />
               )}
             </div>
             <div className="min-w-0 flex-1">
@@ -73,14 +106,18 @@ export default function OrderCard({ order }: OrderCardProps) {
 
       <div className="flex flex-wrap items-end justify-between gap-4 border-t border-border/40 bg-muted/10 p-4 sm:px-5">
         <div className="space-y-2 text-xs text-muted-foreground">
-          <p className={`flex items-center gap-1.5 font-medium ${paymentStyles[order.paymentStatus]}`}>
+          <p
+            className={`flex items-center gap-1.5 font-medium ${paymentStyles[order.paymentStatus]}`}
+          >
             <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />
             {paymentLabels[order.paymentStatus]}
           </p>
           <p className="flex items-center gap-1.5">
             <Truck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span className="break-words">
-              {order.courier ? `Courier: ${order.courier}` : "Courier not assigned"}
+              {order.courier
+                ? `Courier: ${order.courier}`
+                : "Courier not assigned"}
             </span>
           </p>
           <p className="flex items-center gap-1.5">

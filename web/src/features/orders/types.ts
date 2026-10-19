@@ -1,3 +1,4 @@
+import { User } from "../auth/types";
 import { Product } from "../products/types";
 
 export type OrderStatus =
@@ -16,6 +17,7 @@ export type PaymentStatus = "PENDING" | "SUCCESS" | "FAILED";
 export type Order = {
   id: string;
   userId: string;
+  user?: Pick<User, "id" | "username" | "firstName" | "lastName" | "email">;
   items: OrderItem[];
   status: OrderStatus;
   paymentStatus: PaymentStatus;

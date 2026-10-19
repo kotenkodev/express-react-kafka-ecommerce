@@ -6,14 +6,26 @@ import { PackageSearch } from "lucide-react";
 interface OrderTableProps {
   orders: Order[];
   isLoading: boolean;
+  isAdmin: boolean;
 }
 
-export default function OrderTable({ orders, isLoading }: OrderTableProps) {
+export default function OrderTable({
+  orders,
+  isLoading,
+  isAdmin,
+}: OrderTableProps) {
   if (isLoading) {
     return (
-      <div role="status" aria-label="Loading orders" className="grid grid-cols-1 gap-5 md:gap-6">
+      <div
+        role="status"
+        aria-label="Loading orders"
+        className="grid grid-cols-1 gap-5 md:gap-6"
+      >
         {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-xs">
+          <div
+            key={index}
+            className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-xs"
+          >
             <div className="flex items-center justify-between gap-4 border-b border-border/40 bg-muted/20 p-4">
               <Skeleton className="h-10 w-1/2 rounded-xl" />
               <Skeleton className="h-6 w-24 rounded-full" />
@@ -44,7 +56,9 @@ export default function OrderTable({ orders, isLoading }: OrderTableProps) {
         <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
           <PackageSearch className="h-7 w-7" aria-hidden="true" />
         </div>
-        <h2 className="text-base font-semibold text-foreground">No orders yet</h2>
+        <h2 className="text-base font-semibold text-foreground">
+          No orders yet
+        </h2>
         <p className="mt-1 max-w-sm text-sm text-muted-foreground">
           Orders will appear here once they have been placed.
         </p>
@@ -55,7 +69,7 @@ export default function OrderTable({ orders, isLoading }: OrderTableProps) {
   return (
     <div className="grid grid-cols-1 gap-5 md:gap-6">
       {orders.map((order) => (
-        <OrderCard key={order.id} order={order} />
+        <OrderCard key={order.id} order={order} isAdmin={isAdmin} />
       ))}
     </div>
   );
