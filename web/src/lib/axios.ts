@@ -1,6 +1,7 @@
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { router } from "@/router";
 import axios, { InternalAxiosRequestConfig } from "axios";
+import { toast } from "sonner";
 
 interface CustomAxiosConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -36,6 +37,22 @@ instance.interceptors.response.use(
     const originalRequest = error.config as CustomAxiosConfig;
     const status = error.response?.status;
 
+    if (!error.response && error.code !== "ERR_CANCELED") {
+      toast.error(
+        "Network error. Unable to reach server. Please check your internet connection.",
+        { id: "network-error" },
+      );
+      return Promise.reject(error);
+    }
+
+    if (status && status >= 500) {
+      toast.error(
+        "Server error. Something went wrong on our end. Please try again later.",
+        { id: "server-error" },
+      );
+      return Promise.reject(error);
+    }
+
     const isAuthError = status === 401 || status === 403;
     const isAuthEndpoint =
       originalRequest.url?.includes("/auth/login") ||
@@ -69,9 +86,21 @@ instance.interceptors.response.use(
       } catch (refreshError) {
         useAuthStore.getState().setUser(null);
         useAuthStore.getState().setAccessToken(null);
+        toast.error("Your session has expired. Please log in again.", {
+          id: "session-expired",
+        });
         router.navigate("/login");
         return Promise.reject(refreshError);
       }
+    }
+
+    if (status === 401 && originalRequest._retry && !isAuthEndpoint) {
+      useAuthStore.getState().setUser(null);
+      useAuthStore.getState().setAccessToken(null);
+      toast.error("Your session has expired. Please log in again.", {
+        id: "session-expired",
+      });
+      router.navigate("/login");
     }
 
     return Promise.reject(error);

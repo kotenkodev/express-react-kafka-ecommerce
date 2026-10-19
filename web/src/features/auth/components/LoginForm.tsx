@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { loginSchema } from "@/features/auth/schemas/login.schema";
 import { login as loginApi } from "@/features/auth/api/auth.api";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { getErrorMessage } from "@/lib/error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ export default function LoginForm() {
         );
         navigate(data.user.role === "admin" ? "/orders" : "/");
       } catch (err: any) {
-        const errorMsg = err.response?.data?.error || "Invalid credentials.";
+        const errorMsg = getErrorMessage(err, "Invalid credentials.");
         setServerError(errorMsg);
         toast.error(errorMsg);
       } finally {

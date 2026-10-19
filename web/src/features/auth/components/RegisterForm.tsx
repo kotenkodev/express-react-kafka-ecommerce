@@ -5,6 +5,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { registerSchema } from "@/features/auth/schemas/register.schema";
 import { register as registerApi } from "@/features/auth/api/auth.api";
+import { getErrorMessage } from "@/lib/error";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -48,8 +49,7 @@ export default function RegisterForm() {
         toast.success("Account created successfully! Please sign in.");
         navigate("/login");
       } catch (err: any) {
-        const errorMsg =
-          err.response?.data?.error || "Failed to create account.";
+        const errorMsg = getErrorMessage(err, "Failed to create account.");
         setServerError(errorMsg);
         toast.error(errorMsg);
       } finally {
