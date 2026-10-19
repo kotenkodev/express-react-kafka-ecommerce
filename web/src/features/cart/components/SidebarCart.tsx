@@ -15,7 +15,6 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useCartStore } from "../store/cartStore";
 
 export function SidebarCart() {
@@ -36,7 +35,6 @@ export function SidebarCart() {
       collapsible="none"
       className="fixed inset-y-0 right-0 z-40 md:sticky md:top-0 h-svh w-80 sm:w-88 border-l border-sidebar-border bg-sidebar flex flex-col shrink-0 shadow-xl md:shadow-none"
     >
-      {/* 1. Header */}
       <SidebarHeader className="border-b border-sidebar-border p-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -79,14 +77,14 @@ export function SidebarCart() {
 
       <SidebarContent className="flex-1 overflow-y-auto p-3">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full min-h-[280px] p-4 text-center">
+          <div className="flex flex-col items-center justify-center h-full min-h-70 p-4 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/70 text-muted-foreground mb-3 shadow-2xs">
               <ShoppingBag className="h-7 w-7 stroke-[1.5]" />
             </div>
             <p className="font-semibold text-sm text-foreground">
               Your cart is empty
             </p>
-            <p className="text-xs text-muted-foreground mt-1 max-w-[200px] leading-relaxed">
+            <p className="text-xs text-muted-foreground mt-1 max-w-50 leading-relaxed">
               Looks like you haven't added anything yet. Explore our products to
               get started!
             </p>
@@ -141,7 +139,7 @@ export function SidebarCart() {
                       >
                         <Minus className="h-3 w-3" />
                       </button>
-                      <span className="text-[11px] font-semibold px-1 min-w-[16px] text-center">
+                      <span className="text-[11px] font-semibold px-1 min-w-4 text-center">
                         {quantity}
                       </span>
                       <button

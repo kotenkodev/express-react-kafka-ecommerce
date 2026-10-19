@@ -11,7 +11,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen min-h-dvh w-full flex flex-col items-center justify-center bg-muted/30 px-4 py-8 sm:py-12">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-muted/30 px-4 py-8 sm:py-12">
       <div className="w-full max-w-md flex flex-col items-center my-auto">
         <Link
           to="/"
