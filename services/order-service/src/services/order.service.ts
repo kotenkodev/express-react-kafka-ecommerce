@@ -86,7 +86,13 @@ export class OrderService {
   async getOrder(user: AuthenticatedUser, orderId: string) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: true },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
     });
 
     if (!order) {
@@ -103,7 +109,13 @@ export class OrderService {
   async getOrders(user: AuthenticatedUser) {
     return await prisma.order.findMany({
       ...(user.role === "user" ? { where: { userId: user.id } } : {}),
-      include: { items: true },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
       orderBy: {
         createdAt: "desc",
       },
