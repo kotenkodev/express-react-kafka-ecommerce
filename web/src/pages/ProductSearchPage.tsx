@@ -1,6 +1,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -38,12 +39,40 @@ export default function ProductSearchPage() {
   const maxPrice = searchParams.get("maxPrice") || "";
   const inStock = searchParams.get("inStock") === "true";
 
+  const parsePrice = (value: string, fallback: number) => {
+    const parsed = Number(value);
+    return value !== "" && Number.isFinite(parsed) && parsed >= 0
+      ? parsed
+      : fallback;
+  };
+  const minimumPrice = parsePrice(minPrice, 0);
+  const maximumPrice = Math.max(minimumPrice, parsePrice(maxPrice, Infinity));
+  // Leave room above explicit URL prices, and reserve the endpoint for no limit.
+  const priceCeiling = Math.max(
+    2000,
+    Math.ceil(
+      (Math.max(
+        minimumPrice,
+        Number.isFinite(maximumPrice) ? maximumPrice : 0,
+      ) +
+        1) /
+        1000,
+    ) * 1000,
+  );
+  const priceRange = [
+    minimumPrice,
+    Number.isFinite(maximumPrice) ? maximumPrice : priceCeiling,
+  ];
+
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 12;
 
   const debouncedQ = useDebounce(q, 300);
-  const debouncedMinPrice = useDebounce(minPrice, 300);
-  const debouncedMaxPrice = useDebounce(maxPrice, 300);
+  const debouncedPriceRange = useDebounce(
+    `${minimumPrice}:${Number.isFinite(maximumPrice) ? maximumPrice : ""}`,
+    300,
+  );
+  const [debouncedMinPrice, debouncedMaxPrice] = debouncedPriceRange.split(":");
 
   const foundProducts = products.length > 0 ? products.length : 0;
 
@@ -70,7 +99,24 @@ export default function ProductSearchPage() {
     });
   };
 
+  const handlePriceChange = (value: number | readonly number[]) => {
+    if (typeof value === "number" || value.length !== 2) return;
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value[0] === 0) next.delete("minPrice");
+        else next.set("minPrice", String(value[0]));
+        if (value[1] === priceCeiling) next.delete("maxPrice");
+        else next.set("maxPrice", String(value[1]));
+        next.delete("page");
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
   useEffect(() => {
+    let ignore = false;
     const loadData = async () => {
       try {
         setIsLoading(true);
@@ -86,6 +132,7 @@ export default function ProductSearchPage() {
           } as ProductQueryInput),
           getCategories(),
         ]);
+        if (ignore) return;
         setProducts(productsRes.products);
         setTotalPages(productsRes.pagination.totalPages);
         setTotalProducts(productsRes.pagination.total);
@@ -93,10 +140,13 @@ export default function ProductSearchPage() {
       } catch (error) {
         console.error("Failed to load page data:", error);
       } finally {
-        setIsLoading(false);
+        if (!ignore) setIsLoading(false);
       }
     };
     loadData();
+    return () => {
+      ignore = true;
+    };
   }, [
     debouncedQ,
     category,
@@ -158,40 +208,38 @@ export default function ProductSearchPage() {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label
-              htmlFor="minPrice"
-              className="text-xs font-semibold uppercase text-muted-foreground"
-            >
-              Min Price ($)
-            </Label>
-            <Input
-              id="minPrice"
-              type="number"
-              min="0"
-              placeholder="0.00"
-              className="bg-background"
-              value={minPrice}
-              onChange={(e) => updateFilter("minPrice", e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label
-              htmlFor="maxPrice"
-              className="text-xs font-semibold uppercase text-muted-foreground"
-            >
-              Max Price ($)
-            </Label>
-            <Input
-              id="maxPrice"
-              type="number"
-              min="0"
-              placeholder="999.00"
-              className="bg-background"
-              value={maxPrice}
-              onChange={(e) => updateFilter("maxPrice", e.target.value)}
-            />
+          <div className="space-y-3 sm:col-span-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span
+                id="price-range-label"
+                className="text-xs font-semibold uppercase text-muted-foreground"
+              >
+                Price range
+              </span>
+              <span className="text-xs font-medium tabular-nums">
+                ${minimumPrice.toFixed(2)} –{" "}
+                {Number.isFinite(maximumPrice)
+                  ? `$${maximumPrice.toFixed(2)}`
+                  : "Any price"}
+              </span>
+            </div>
+            <div className="rounded-lg border border-border/60 bg-background px-3 py-3">
+              <Slider
+                aria-labelledby="price-range-label"
+                thumbLabels={["Minimum price", "Maximum price"]}
+                min={0}
+                max={priceCeiling}
+                step={1}
+                value={priceRange}
+                thumbCollisionBehavior="none"
+                onValueChange={handlePriceChange}
+                className="py-2"
+              />
+              <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+                <span>$0</span>
+                <span>${priceCeiling.toLocaleString()}+</span>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center h-10 px-2 lg:col-span-2">
