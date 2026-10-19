@@ -9,15 +9,6 @@ import { healthCheck } from "@ecommerce/shared";
 
 const router = Router();
 
-router.get("/test", async (req, res) => {
-  try {
-    await healthCheck();
-    res.status(200).json({ success: true, message: "Database connected!" });
-  } catch {
-    res.status(503).json({ success: false, message: "Database unavailable" });
-  }
-});
-
 router
   .route("/")
   .get(validate({ query: productQuerySchema }), productController.getProducts)

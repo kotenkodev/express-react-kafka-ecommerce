@@ -2,6 +2,12 @@ import { z } from "@ecommerce/shared";
 
 export const productSchema = z.object({
   name: z.string().trim().min(1, "Name cannot be empty"),
+  emoji: z
+    .string()
+    .trim()
+    .min(1, "Emoji cannot be empty")
+    .optional()
+    .nullable(),
   price: z
     .number({
       required_error: "Price is required",

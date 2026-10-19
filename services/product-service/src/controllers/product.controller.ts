@@ -12,27 +12,27 @@ export class ProductController {
     const query = res.locals.query as ProductQueryInput;
     const { products, pagination } = await productService.getProducts(query);
 
-    res.status(200).json({ success: true, data: products, pagination });
+    res.status(200).json({ products, pagination });
   }
 
   async getCategories(_req: Request, res: Response) {
     const categories = await productService.getCategories();
 
-    res.status(200).json({ success: true, data: categories });
+    res.status(200).json(categories);
   }
 
   async getProduct(req: Request, res: Response) {
     const { id } = req.params as ProductParamsInput;
 
     const product = await productService.getProduct(id);
-    res.status(200).json({ success: true, data: product });
+    res.status(200).json(product);
   }
 
   async createProduct(req: Request, res: Response) {
     const body = req.body as ProductCreateInput;
 
     const product = await productService.createProduct(body);
-    res.status(201).json({ success: true, data: product });
+    res.status(201).json(product);
   }
 
   async updateProduct(req: Request, res: Response) {
@@ -40,7 +40,7 @@ export class ProductController {
     const body = req.body as ProductUpdateInput;
 
     const product = await productService.updateProduct(id, body);
-    res.status(200).json({ success: true, data: product });
+    res.status(200).json(product);
   }
 
   async deleteProduct(req: Request, res: Response) {

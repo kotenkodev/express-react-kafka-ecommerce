@@ -21,6 +21,7 @@ const PRODUCTS_DATA = [
   {
     category: "Electronics",
     name: "Apple iPhone 15 Pro Max 256GB Titanium",
+    emoji: "📱",
     description:
       "A17 Pro chip with 6-core GPU, aerospace-grade titanium design, 48MP main camera and USB-C connectivity.",
     price: 1199.99,
@@ -29,6 +30,7 @@ const PRODUCTS_DATA = [
   {
     category: "Electronics",
     name: "Sony WH-1000XM5 Wireless Headphones",
+    emoji: "🎧",
     description:
       "Industry-leading noise canceling with two processors and 8 microphones for exceptional sound and call clarity.",
     price: 399.99,
@@ -37,6 +39,7 @@ const PRODUCTS_DATA = [
   {
     category: "Electronics",
     name: 'Apple MacBook Air 15" M3',
+    emoji: "💻",
     description:
       "Strikingly thin design, stunning Liquid Retina display, up to 18 hours of battery life and 16GB unified memory.",
     price: 1299.0,
@@ -45,6 +48,7 @@ const PRODUCTS_DATA = [
   {
     category: "Electronics",
     name: "Logitech MX Master 3S Wireless Mouse",
+    emoji: "🖱️",
     description:
       "Quiet Click technology, 8,000 DPI any-surface tracking sensor, and ultra-fast MagSpeed electromagnetic scrolling.",
     price: 99.99,
@@ -53,6 +57,7 @@ const PRODUCTS_DATA = [
   {
     category: "Electronics",
     name: 'Samsung 34" Odyssey OLED G8 Curved Gaming Monitor',
+    emoji: "🖥️",
     description:
       "Curved UWQHD display with Neo Quantum Processor, 0.03ms response time, and 175Hz refresh rate.",
     price: 899.99,
@@ -63,6 +68,7 @@ const PRODUCTS_DATA = [
   {
     category: "Clothing",
     name: "Patagonia Better Sweater Fleece Jacket",
+    emoji: "🧥",
     description:
       "100% recycled polyester fleece jacket dyed with a low-impact process, offering lightweight warmth and durability.",
     price: 139.0,
@@ -71,6 +77,7 @@ const PRODUCTS_DATA = [
   {
     category: "Clothing",
     name: "Levi's 501 Original Fit Jeans",
+    emoji: "👖",
     description:
       "The timeless straight-leg silhouette with signature button fly, crafted from 100% non-stretch cotton denim.",
     price: 79.5,
@@ -79,6 +86,7 @@ const PRODUCTS_DATA = [
   {
     category: "Clothing",
     name: "Nike Air Zoom Pegasus 40 Running Shoes",
+    emoji: "👟",
     description:
       "Engineered mesh upper with responsive Nike React foam and dual Zoom Air units for daily road training.",
     price: 130.0,
@@ -87,6 +95,7 @@ const PRODUCTS_DATA = [
   {
     category: "Clothing",
     name: "Uniqlo Supima Cotton Crew Neck T-Shirt",
+    emoji: "👕",
     description:
       "Made from 100% premium long-staple Supima cotton for an exceptionally smooth, soft, and breathable feel.",
     price: 19.9,
@@ -97,6 +106,7 @@ const PRODUCTS_DATA = [
   {
     category: "Home & Kitchen",
     name: "Breville Barista Touch Espresso Machine",
+    emoji: "☕",
     description:
       "Automated touchscreen with pre-programmed cafe drinks, integrated precision grinder, and 3-second heat up.",
     price: 999.95,
@@ -105,6 +115,7 @@ const PRODUCTS_DATA = [
   {
     category: "Home & Kitchen",
     name: "Le Creuset Signature Enameled Cast Iron Dutch Oven (5.5 Qt)",
+    emoji: "🍲",
     description:
       "Iconic enameled cast iron delivers superior heat distribution and retention for slow-cooking, searing, and braising.",
     price: 420.0,
@@ -113,6 +124,7 @@ const PRODUCTS_DATA = [
   {
     category: "Home & Kitchen",
     name: "Dyson V15 Detect Cordless Vacuum",
+    emoji: "🧹",
     description:
       "Engineered with laser illumination to reveal invisible dust on hard floors with intelligent suction adjustment.",
     price: 749.99,
@@ -121,6 +133,7 @@ const PRODUCTS_DATA = [
   {
     category: "Home & Kitchen",
     name: "Fellow Ode Gen 2 Brew Coffee Grinder",
+    emoji: "🫘",
     description:
       "Precision coffee grinder with 64mm commercial-grade flat burrs, 31 grind settings, and low-retention chute.",
     price: 345.0,
@@ -131,6 +144,7 @@ const PRODUCTS_DATA = [
   {
     category: "Sports & Outdoors",
     name: "Yeti Tundra 45 Hard Cooler",
+    emoji: "🧊",
     description:
       "Heavy-duty rotomolded cooler with PermaFrost insulation and FatWall design for ultimate multi-day ice retention.",
     price: 325.0,
@@ -139,6 +153,7 @@ const PRODUCTS_DATA = [
   {
     category: "Sports & Outdoors",
     name: "Hydro Flask 32 oz Wide Mouth Bottle",
+    emoji: "🧴",
     description:
       "TempShield double-wall vacuum insulation keeps liquids ice cold up to 24 hours or piping hot up to 12 hours.",
     price: 44.95,
@@ -147,6 +162,7 @@ const PRODUCTS_DATA = [
   {
     category: "Sports & Outdoors",
     name: "Garmin Forerunner 265 GPS Running Smartwatch",
+    emoji: "⌚",
     description:
       "Brilliant AMOLED touchscreen display with advanced training readiness metrics and wrist-based running dynamics.",
     price: 449.99,
@@ -155,6 +171,7 @@ const PRODUCTS_DATA = [
   {
     category: "Sports & Outdoors",
     name: "Manduka PRO Yoga Mat (6mm)",
+    emoji: "🧘",
     description:
       "High-density cushioned support with closed-cell surface preventing moisture and sweat from seeping in.",
     price: 128.0,
@@ -165,6 +182,7 @@ const PRODUCTS_DATA = [
   {
     category: "Books",
     name: "Designing Data-Intensive Applications (Martin Kleppmann)",
+    emoji: "📖",
     description:
       "The definitive comprehensive guide to principles, architectures, and trade-offs in distributed data systems.",
     price: 45.99,
@@ -173,6 +191,7 @@ const PRODUCTS_DATA = [
   {
     category: "Books",
     name: "Building Microservices: Designing Fine-Grained Systems (Sam Newman)",
+    emoji: "📚",
     description:
       "In-depth guide covering modern architecture, integration patterns, security, and deployment for distributed services.",
     price: 49.99,
@@ -181,6 +200,7 @@ const PRODUCTS_DATA = [
   {
     category: "Books",
     name: "Clean Code: A Handbook of Agile Software Craftsmanship",
+    emoji: "📕",
     description:
       "A timeless, practical guide detailing principles and patterns for crafting robust, readable software.",
     price: 39.95,
@@ -191,6 +211,7 @@ const PRODUCTS_DATA = [
   {
     category: "Beauty & Personal Care",
     name: "Dyson Supersonic Hair Dryer",
+    emoji: "💨",
     description:
       "Engineered for different hair types with fast drying and intelligent heat control to prevent extreme thermal damage.",
     price: 429.99,
@@ -199,6 +220,7 @@ const PRODUCTS_DATA = [
   {
     category: "Beauty & Personal Care",
     name: "Aesop Resurrection Aromatique Hand Balm (75ml)",
+    emoji: "🧴",
     description:
       "Nourishing botanical hand balm scented with mandarin rind, rosemary leaf, and cedar atlas.",
     price: 33.0,
@@ -207,6 +229,7 @@ const PRODUCTS_DATA = [
   {
     category: "Beauty & Personal Care",
     name: "CeraVe Hydrating Facial Cleanser (16 oz)",
+    emoji: "🧼",
     description:
       "Gentle lotion cleanser formulated with 3 essential ceramides and hyaluronic acid to restore skin moisture barrier.",
     price: 15.99,
@@ -324,6 +347,7 @@ async function seedProducts(categoryMap: Map<string, string>) {
       const updated = await prisma.product.update({
         where: { id: existing.id },
         data: {
+          emoji: item.emoji,
           description: item.description,
           price: item.price,
           stock: item.stock,
@@ -335,6 +359,7 @@ async function seedProducts(categoryMap: Map<string, string>) {
       const created = await prisma.product.create({
         data: {
           name: item.name,
+          emoji: item.emoji,
           description: item.description,
           price: item.price,
           stock: item.stock,

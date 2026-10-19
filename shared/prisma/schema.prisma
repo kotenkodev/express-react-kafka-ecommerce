@@ -55,6 +55,7 @@ model Category {
 model Product {
   id          String   @id @default(uuid())
   name        String
+  emoji       String?  @default("📦")
   description String?
   stock       Int      @default(0)
   price       Decimal  @db.Decimal(10, 2)
