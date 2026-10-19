@@ -9,6 +9,7 @@ import SearchPage from "./pages/SearchPage";
 import AdminProductsPage from "./pages/AdminProductsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ProductSearchPage from "./pages/ProductSearchPage";
+import MainLayout from "./components/layout/MainLayout";
 
 export const router = createBrowserRouter([
   {
@@ -23,36 +24,41 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        path: "/",
-        element: <ShopPage />,
-      },
-      {
-        path: "/orders",
-        element: <OrdersPage />,
-      },
-      {
-        element: <RoleRoute roles={["user"]} />,
+        element: <MainLayout />,
         children: [
           {
-            path: "/product-search",
-            element: <ProductSearchPage />,
-          },
-        ],
-      },
-      {
-        element: <RoleRoute roles={["admin"]} />,
-        children: [
-          {
-            path: "/analytics",
-            element: <AnalyticsPage />,
+            path: "/",
+            element: <ShopPage />,
           },
           {
-            path: "/search",
-            element: <SearchPage />,
+            path: "/orders",
+            element: <OrdersPage />,
           },
           {
-            path: "/products",
-            element: <AdminProductsPage />,
+            element: <RoleRoute roles={["user"]} />,
+            children: [
+              {
+                path: "/product-search",
+                element: <ProductSearchPage />,
+              },
+            ],
+          },
+          {
+            element: <RoleRoute roles={["admin"]} />,
+            children: [
+              {
+                path: "/analytics",
+                element: <AnalyticsPage />,
+              },
+              {
+                path: "/search",
+                element: <SearchPage />,
+              },
+              {
+                path: "/products",
+                element: <AdminProductsPage />,
+              },
+            ],
           },
         ],
       },
