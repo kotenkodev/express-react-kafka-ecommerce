@@ -64,7 +64,7 @@ instance.interceptors.response.use(
         }
         return instance(originalRequest);
       } catch (refreshError) {
-        useAuthStore.getState().logout();
+        useAuthStore.getState().setUser(null);
         router.navigate("/login");
         return Promise.reject(refreshError);
       }

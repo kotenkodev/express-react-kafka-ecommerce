@@ -1,68 +1,58 @@
-import { z } from "@ecommerce/shared";
+import * as yup from "yup";
 
-export const registerSchema = z
+export const registerSchema = yup
   .object({
-    username: z
-      .string({
-        required_error: "Username is required",
-        invalid_type_error: "Username must be a string",
-      })
+    username: yup
+      .string()
+      .typeError("Username must be a string")
+      .required("Username is required")
       .trim()
       .min(3, "Username must be at least 3 characters")
       .max(30, "Username must not exceed 30 characters")
-      .regex(
+      .matches(
         /^[a-zA-Z0-9_]+$/,
         "Username can only contain letters, numbers, and underscores",
       ),
 
-    firstName: z
-      .string({
-        required_error: "First name is required",
-        invalid_type_error: "First name must be a string",
-      })
+    firstName: yup
+      .string()
+      .typeError("First name must be a string")
+      .required("First name is required")
       .trim()
       .min(1, "First name is required")
       .max(50, "First name must not exceed 50 characters"),
 
-    lastName: z
-      .string({
-        required_error: "Last name is required",
-        invalid_type_error: "Last name must be a string",
-      })
+    lastName: yup
+      .string()
+      .typeError("Last name must be a string")
+      .required("Last name is required")
       .trim()
       .min(1, "Last name is required")
       .max(50, "Last name must not exceed 50 characters"),
 
-    email: z
-      .string({
-        required_error: "Email is required",
-        invalid_type_error: "Email must be a string",
-      })
+    email: yup
+      .string()
+      .typeError("Email must be a string")
+      .required("Email is required")
       .trim()
       .email("Please enter a valid email address")
       .max(254, "Email must not exceed 254 characters")
-      .toLowerCase(),
+      .lowercase(),
 
-    password: z
-      .string({
-        required_error: "Password is required",
-        invalid_type_error: "Password must be a string",
-      })
+    password: yup
+      .string()
+      .typeError("Password must be a string")
+      .required("Password is required")
       .min(8, "Password must be at least 8 characters")
-      .regex(/[a-z]/, "Password must contain a lowercase letter")
-      .regex(/[A-Z]/, "Password must contain an uppercase letter")
-      .regex(/[0-9]/, "Password must contain a number")
-      .regex(/[^a-zA-Z0-9]/, "Password must contain a special character")
-      .refine((password) => Buffer.byteLength(password, "utf8") <= 72, {
-        message: "Password must not exceed 72 UTF-8 bytes",
-      }),
-    passwordConfirm: z.string({
-      required_error: "Please confirm your password",
-    }),
+      .matches(/[a-z]/, "Password must contain a lowercase letter")
+      .matches(/[A-Z]/, "Password must contain an uppercase letter")
+      .matches(/[0-9]/, "Password must contain a number")
+      .matches(/[^a-zA-Z0-9]/, "Password must contain a special character"),
+    passwordConfirm: yup
+      .string()
+      .required("Please confirm your password")
+      .oneOf([yup.ref("password")], "Passwords do not match"),
   })
-  .refine((data) => data.password === data.passwordConfirm, {
-    message: "Passwords do not match",
-    path: ["passwordConfirm"],
-  });
+  .required();
 
-export type RegisterInput = z.infer<typeof registerSchema>;
+export type RegisterInput = yup.InferType<typeof registerSchema>;

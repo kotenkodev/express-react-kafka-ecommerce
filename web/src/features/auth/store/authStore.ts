@@ -1,23 +1,38 @@
 import { create } from "zustand";
 import { User } from "../types";
 import { persist } from "zustand/middleware";
+import { getMe } from "../api/auth.api";
 
 interface AuthState {
   user: User | null;
   accessToken: string | null;
+  isLoading: boolean;
+  initAuth: () => Promise<void>;
   setAccessToken: (accessToken: string) => void;
-  login: (user: User, token: string) => void;
-  logout: () => void;
+  setUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       accessToken: null,
-      login: (user, token) => set({ user, accessToken: token }),
+      isLoading: true,
+      setUser: (user: User) => set({ user }),
       setAccessToken: (token: string) => set({ accessToken: token }),
-      logout: () => set({ user: null, accessToken: null }),
+      initAuth: async () => {
+        const { accessToken } = get();
+        if (!accessToken) {
+          set({ isLoading: false });
+          return;
+        }
+        try {
+          const user = await getMe();
+          set({ user, isLoading: false });
+        } catch {
+          set({ user: null, accessToken: null, isLoading: false });
+        }
+      },
     }),
     {
       name: "auth-storage",
