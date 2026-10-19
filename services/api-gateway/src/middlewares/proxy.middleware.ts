@@ -22,6 +22,12 @@ export const createGatewayProxy = (target: string, stripPrefix = true) => {
           proxyReq.setHeader("x-user-role", expressReq.user.role);
         }
       },
+      proxyRes: (proxyRes: IncomingMessage) => {
+        delete proxyRes.headers["access-control-allow-origin"];
+        delete proxyRes.headers["access-control-allow-credentials"];
+        delete proxyRes.headers["access-control-allow-methods"];
+        delete proxyRes.headers["access-control-allow-headers"];
+      },
       error: (err: Error, _req: IncomingMessage, res: any) => {
         console.error(
           `[API-Gateway] Proxy error connecting to ${target}:`,
@@ -53,6 +59,12 @@ export const createSseProxy = (target: string) => {
           proxyReq.setHeader("x-user-id", String(expressReq.user.id));
           proxyReq.setHeader("x-user-role", expressReq.user.role);
         }
+      },
+      proxyRes: (proxyRes: IncomingMessage) => {
+        delete proxyRes.headers["access-control-allow-origin"];
+        delete proxyRes.headers["access-control-allow-credentials"];
+        delete proxyRes.headers["access-control-allow-methods"];
+        delete proxyRes.headers["access-control-allow-headers"];
       },
       error: (err: Error, _req: IncomingMessage, res: any) => {
         console.error(

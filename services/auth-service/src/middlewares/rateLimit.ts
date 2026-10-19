@@ -47,6 +47,9 @@ export const rateLimit =
     key: (req: Request) => string = clientIpKey,
   ): RequestHandler =>
   async (req, res, next) => {
+    if (!env.enableRateLimit) {
+      return next();
+    }
     try {
       await store.consume(key(req));
       next();
@@ -66,6 +69,9 @@ export const rateLimit =
   };
 
 export async function refundSuccessfulLogin(req: Request): Promise<void> {
+  if (!env.enableRateLimit) {
+    return;
+  }
   try {
     await rateLimiters.loginFailures.reward(loginFailureKey(req), 1);
   } catch {
