@@ -15,6 +15,7 @@ import {
   httpMetricsMiddleware,
   metricsHandler,
 } from "@ecommerce/shared";
+import { metricsAuth } from "./middlewares/metrics.middleware";
 
 const app = express();
 app.set("trust proxy", env.trustProxy);
@@ -36,7 +37,7 @@ app.use(
 );
 
 app.use(httpMetricsMiddleware);
-app.get("/metrics", metricsHandler);
+app.get("/metrics", metricsAuth, metricsHandler);
 
 app.use((req, _res, next) => {
   delete req.headers["x-user-id"];

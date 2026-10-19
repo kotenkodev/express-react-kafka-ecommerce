@@ -35,6 +35,6 @@ scrape_configs:
       - targets: ["product-service:3007"]
 
   - job_name: "api-gateway"
+    bearer_token: "internal-prometheus-metrics-secret-key"
     static_configs:
       - targets: ["api-gateway:8000"]
-
