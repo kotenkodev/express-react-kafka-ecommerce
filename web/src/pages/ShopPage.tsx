@@ -1,11 +1,13 @@
 import { getProducts } from "@/features/products/api/products.api";
 import ProductGrid from "@/features/products/components/ProductGrid";
 import { Product } from "@/features/products/types";
+import { useCartStore } from "@/features/cart/store/cartStore";
 import { useEffect, useState } from "react";
 
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { addItem } = useCartStore();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -33,7 +35,11 @@ export default function ShopPage() {
         </p>
       </div>
 
-      <ProductGrid products={products} isLoading={isLoading} />
+      <ProductGrid
+        products={products}
+        isLoading={isLoading}
+        onAddToCart={addItem}
+      />
     </div>
   );
 }

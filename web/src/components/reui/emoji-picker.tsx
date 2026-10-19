@@ -1610,7 +1610,7 @@ export function EmojiPicker(props: EmojiPickerProps) {
     }
     if (props.value === undefined) setUncontrolled(next)
     if (props.multiple) props.onValueChange?.(next)
-    else props.onValueChange?.(next[0] ?? null)
+    else (props.onValueChange as any)?.(next[0] ?? null)
   }
 
   const recordRecent = (emojiId: string) => {
