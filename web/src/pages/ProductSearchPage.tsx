@@ -14,7 +14,7 @@ import {
   getCategories,
   getProducts,
 } from "@/features/products/api/products.api";
-import { Pagination } from "@/features/products/components/Pagination";
+import { Pagination } from "@/components/Pagination";
 import ProductGrid from "@/features/products/components/ProductGrid";
 import { ProductQueryInput } from "@/features/products/schemas/product-query.schema";
 import { Category, Product } from "@/features/products/types";
