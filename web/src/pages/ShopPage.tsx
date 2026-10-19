@@ -3,6 +3,8 @@ import ProductGrid from "@/features/products/components/ProductGrid";
 import { Product } from "@/features/products/types";
 import { useCartStore } from "@/features/cart/store/cartStore";
 import { useEffect, useRef, useState } from "react";
+import { getErrorMessage } from "@/lib/error";
+import { toast } from "sonner";
 
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -34,9 +36,14 @@ export default function ShopPage() {
         );
 
         setHasMore(page < data.pagination.totalPages);
-      } catch {
+      } catch (err: any) {
         if (!ignore) {
-          setError("Could not load products. Please try again.");
+          const errorMsg = getErrorMessage(
+            err,
+            "Failed to load products. Please try again.",
+          );
+          setError(errorMsg);
+          toast.error(errorMsg);
         }
       } finally {
         if (!ignore) setIsLoading(false);

@@ -23,6 +23,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
+import { getErrorMessage } from "@/lib/error";
+import { toast } from "sonner";
 
 export default function ProductSearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -137,8 +139,12 @@ export default function ProductSearchPage() {
         setTotalPages(productsRes.pagination.totalPages);
         setTotalProducts(productsRes.pagination.total);
         setCategories(categoriesRes);
-      } catch (error) {
-        console.error("Failed to load page data:", error);
+      } catch (err: any) {
+        const errorMsg = getErrorMessage(
+          err,
+          "Failed to load products. Please try again.",
+        );
+        toast.error(errorMsg);
       } finally {
         if (!ignore) setIsLoading(false);
       }

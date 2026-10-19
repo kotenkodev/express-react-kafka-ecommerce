@@ -9,6 +9,7 @@ import { useCartStore } from "@/features/cart/store/cartStore";
 import { getProductById } from "@/features/products/api/products.api";
 import type { Product } from "@/features/products/types";
 import { getErrorMessage } from "@/lib/error";
+import { toast } from "sonner";
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -39,7 +40,11 @@ function ProductDetails({ id }: { id: string | undefined }) {
         const result = await getProductById(id);
         if (!ignore) setProduct(result);
       } catch (err) {
-        if (!ignore) setError(getErrorMessage(err));
+        if (!ignore) {
+          const errorMsg = getErrorMessage(err);
+          setError(errorMsg);
+          toast.error(errorMsg);
+        }
       } finally {
         if (!ignore) setIsLoading(false);
       }
