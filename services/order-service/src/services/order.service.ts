@@ -104,6 +104,9 @@ export class OrderService {
     return await prisma.order.findMany({
       ...(user.role === "user" ? { where: { userId: user.id } } : {}),
       include: { items: true },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
   }
 }

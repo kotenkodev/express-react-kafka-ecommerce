@@ -12,57 +12,63 @@ import ProductSearchPage from "./pages/ProductSearchPage";
 import MainLayout from "./components/layout/MainLayout";
 import HomeRoute from "./components/guards/HomeRoute";
 import ProductPage from "./pages/ProductPage";
+import RouteErrorPage from "./pages/RouteErrorPage";
 
 export const router = createBrowserRouter([
   {
-    path: "/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/register",
-    element: <RegisterPage />,
-  },
-  {
-    element: <ProtectedRoute />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
-        element: <MainLayout />,
+        path: "/login",
+        element: <LoginPage />,
+      },
+      {
+        path: "/register",
+        element: <RegisterPage />,
+      },
+      {
+        element: <ProtectedRoute />,
         children: [
           {
-            path: "/",
-            element: <HomeRoute />,
-          },
-          {
-            path: "/products/:id",
-            element: <ProductPage />,
-          },
-          {
-            path: "/orders",
-            element: <OrdersPage />,
-          },
-          {
-            element: <RoleRoute roles={["user"]} />,
+            element: <MainLayout />,
             children: [
               {
-                path: "/product-search",
-                element: <ProductSearchPage />,
-              },
-            ],
-          },
-          {
-            element: <RoleRoute roles={["admin"]} />,
-            children: [
-              {
-                path: "/analytics",
-                element: <AnalyticsPage />,
+                path: "/",
+                element: <HomeRoute />,
               },
               {
-                path: "/search",
-                element: <SearchPage />,
+                path: "/products/:id",
+                element: <ProductPage />,
               },
               {
-                path: "/products",
-                element: <AdminProductsPage />,
+                path: "/orders",
+                element: <OrdersPage />,
+              },
+              {
+                element: <RoleRoute roles={["user"]} />,
+                children: [
+                  {
+                    path: "/product-search",
+                    element: <ProductSearchPage />,
+                  },
+                ],
+              },
+              {
+                element: <RoleRoute roles={["admin"]} />,
+                children: [
+                  {
+                    path: "/analytics",
+                    element: <AnalyticsPage />,
+                  },
+                  {
+                    path: "/search",
+                    element: <SearchPage />,
+                  },
+                  {
+                    path: "/products",
+                    element: <AdminProductsPage />,
+                  },
+                ],
               },
             ],
           },
