@@ -15,14 +15,14 @@ description: |-
   - `200 OK`: Authentication successful (`{ accessToken, user }`).
   - `400 Bad Request`: Validation failure (missing required identifier or password).
   - `401 Unauthorized`: Invalid credentials or password.
+examples: .resources/Login.resources/examples
 order: 2000
 method: POST
 url: "{{baseUrl}}/api/auth/login"
 auth:
   type: noauth
 headers:
-  - key: Content-Type
-    value: application/json
+  Content-Type: application/json
 body:
   type: json
   content: |-
@@ -62,4 +62,3 @@ scripts:
         }
       }
     language: text/javascript
-

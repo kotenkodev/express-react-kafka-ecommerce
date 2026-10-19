@@ -3,9 +3,7 @@ import { productQuerySchema } from "../schemas/product-query.schema";
 import { productParamsSchema } from "../schemas/product-params.schema";
 import { productSchema, productUpdateSchema } from "../schemas/product.schema";
 import { productController } from "../controllers/product.controller";
-import { adminOnly } from "../middlewares/adminOnly";
-import { validate } from "@ecommerce/shared";
-import { healthCheck } from "@ecommerce/shared";
+import { validate, requireRole } from "@ecommerce/shared";
 
 const router = Router();
 
@@ -13,7 +11,7 @@ router
   .route("/")
   .get(validate({ query: productQuerySchema }), productController.getProducts)
   .post(
-    adminOnly,
+    requireRole("admin"),
     validate({ body: productSchema }),
     productController.createProduct,
   );
@@ -24,12 +22,12 @@ router
   .route("/:id")
   .get(validate({ params: productParamsSchema }), productController.getProduct)
   .put(
-    adminOnly,
+    requireRole("admin"),
     validate({ params: productParamsSchema, body: productUpdateSchema }),
     productController.updateProduct,
   )
   .delete(
-    adminOnly,
+    requireRole("admin"),
     validate({ params: productParamsSchema }),
     productController.deleteProduct,
   );

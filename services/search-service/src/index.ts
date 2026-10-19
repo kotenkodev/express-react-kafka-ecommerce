@@ -30,11 +30,6 @@ app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", service: "search-service" });
 });
 
-app.get("/metrics", async (_req: Request, res: Response) => {
-  res.setHeader("Content-Type", metricsRegistry.contentType);
-  res.send(await metricsRegistry.metrics());
-});
-
 app.use(errorHandler);
 
 let shuttingDown = false;

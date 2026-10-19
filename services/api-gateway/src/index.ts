@@ -3,6 +3,7 @@ import cors from "cors";
 import {
   authenticateToken,
   optionalToken,
+  requireRole,
 } from "./middlewares/auth.middleware";
 import {
   createGatewayProxy,
@@ -14,7 +15,6 @@ import {
   httpMetricsMiddleware,
   metricsHandler,
 } from "@ecommerce/shared";
-import { Request, Response } from "express";
 
 const app = express();
 app.set("trust proxy", env.trustProxy);
@@ -51,11 +51,17 @@ app.use("/api/orders", authenticateToken, createGatewayProxy(SERVICES.order));
 
 app.use("/api/events", authenticateToken, createSseProxy(SERVICES.order));
 
-app.use("/api/search", authenticateToken, createGatewayProxy(SERVICES.search));
+app.use(
+  "/api/search",
+  authenticateToken,
+  requireRole("admin"),
+  createGatewayProxy(SERVICES.search),
+);
 
 app.use(
   "/api/analytics",
   authenticateToken,
+  requireRole("admin"),
   createGatewayProxy(SERVICES.analytics),
 );
 

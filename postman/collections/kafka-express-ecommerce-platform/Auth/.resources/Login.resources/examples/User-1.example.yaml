@@ -1,0 +1,39 @@
+$kind: http-example
+name: User
+description: |-
+  ### Authenticate & Obtain JWT Tokens
+  Authenticates a user using either `username` or `email` plus `password`. Upon success, returns an ephemeral JWT access token (15-minute validity) and sets an HTTP-only refresh token (7-day validity stored in Redis key `refresh_token:<userId>`).
+
+  #### Default Seed Accounts:
+  - **Administrator**: `admin@kafkashop.com` (or username `admin`) / `admin123`
+  - **Customer**: Registered accounts created via `POST /api/auth/register`
+
+  #### Automatic Postman Script Behavior:
+  - Saves `accessToken` to collection variables for bearer authentication across subsequent requests.
+  - Extracts and saves `refreshToken` from the `Set-Cookie` header / cookie store for token rotation tests.
+
+  #### Responses:
+  - `200 OK`: Authentication successful (`{ accessToken, user }`).
+  - `400 Bad Request`: Validation failure (missing required identifier or password).
+  - `401 Unauthorized`: Invalid credentials or password.
+auth:
+  type: noauth
+request:
+  url: "{{baseUrl}}/api/auth/login"
+  method: POST
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "username": "user_1792492817",
+        "password": "Password123!"
+      }
+response:
+  statusCode: 200
+  statusText: ""
+  body:
+    type: json
+    content: ""
+order: 1000

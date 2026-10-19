@@ -1,14 +1,13 @@
 import { Request, Response } from "express";
-import {
-  searchService,
-  type SearchQueryInput,
-  type SearchIdInput,
-} from "../services/search.service";
+import { searchService } from "../services/search.service";
+import type { SearchQueryInput } from "../schema/search-query.schema";
+import type { SearchIdInput } from "../schema/search-id.schema";
 
 export class SearchController {
   async search(req: Request, res: Response) {
     const queryParams =
-      (res.locals.query as SearchQueryInput) ?? (req.query as SearchQueryInput);
+      (res.locals.query as SearchQueryInput) ??
+      (req.query as unknown as SearchQueryInput);
     const result = await searchService.searchOrders(queryParams);
     res.status(200).json(result);
   }

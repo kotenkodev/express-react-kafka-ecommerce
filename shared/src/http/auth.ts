@@ -29,3 +29,22 @@ export const requireUser = (
   (req as RequestWithUser).user = { id, role, email };
   next();
 };
+
+export const requireRole = (...allowedRoles: UserRole[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const role =
+      (req as RequestWithUser).user?.role ||
+      (req.headers["x-user-role"] as UserRole);
+    if (!role) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: Authentication required" });
+    }
+    if (!allowedRoles.includes(role)) {
+      return res.status(403).json({
+        error: `Forbidden: Requires role [${allowedRoles.join(", ")}]`,
+      });
+    }
+    next();
+  };
+};
