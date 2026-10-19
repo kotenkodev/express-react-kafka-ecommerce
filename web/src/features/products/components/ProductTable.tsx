@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Product } from "../types";
+import { formatDate } from "@/lib/utils";
 
 interface ProductTableProps {
   products: Product[];
@@ -18,19 +19,6 @@ interface ProductTableProps {
   onEdit?: (product: Product) => void;
   onDelete?: (product: Product) => void;
 }
-
-const formatDate = (dateStr?: string) => {
-  if (!dateStr) return "—";
-  try {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }).format(new Date(dateStr));
-  } catch {
-    return dateStr;
-  }
-};
 
 const ProductRow = ({
   product,

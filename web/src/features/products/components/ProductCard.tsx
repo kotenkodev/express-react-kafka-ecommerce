@@ -10,7 +10,10 @@ interface ProductCardProps {
   onAddToCart?: (product: Product) => void;
 }
 
-export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onAddToCart,
+}: ProductCardProps) {
   const categoryName =
     typeof product.category === "object"
       ? product.category?.name
@@ -22,9 +25,7 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
 
   return (
     <Card className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/60 bg-card hover:border-primary/40 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 p-0">
-      {/* Top Banner / Hero with Emoji */}
       <div className="relative flex h-44 w-full items-center justify-center bg-gradient-to-b from-muted/50 to-muted/20 border-b border-border/40 overflow-hidden">
-        {/* Category Badge */}
         {categoryName && (
           <Badge
             variant="secondary"
@@ -34,7 +35,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
           </Badge>
         )}
 
-        {/* Stock Badge */}
         {isOutOfStock ? (
           <Badge
             variant="destructive"
@@ -58,7 +58,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
           </Badge>
         )}
 
-        {/* Product Emoji */}
         <span
           className="text-6xl select-none transition-transform duration-300 group-hover:scale-115 drop-shadow-sm"
           role="img"
@@ -68,7 +67,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         </span>
       </div>
 
-      {/* Card Body */}
       <div className="flex flex-col flex-1 p-4 gap-2">
         <h3 className="font-semibold text-base leading-snug line-clamp-1 group-hover:text-primary transition-colors">
           <Link to={`/products/${product.id}`} className="hover:underline">
@@ -80,7 +78,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
         </p>
       </div>
 
-      {/* Card Footer */}
       <div className="flex items-center justify-between border-t border-border/40 p-4 pt-3 mt-auto bg-muted/10">
         <div className="flex flex-col">
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">

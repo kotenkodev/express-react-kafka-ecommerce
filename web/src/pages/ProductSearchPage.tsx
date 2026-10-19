@@ -49,7 +49,6 @@ export default function ProductSearchPage() {
   };
   const minimumPrice = parsePrice(minPrice, 0);
   const maximumPrice = Math.max(minimumPrice, parsePrice(maxPrice, Infinity));
-  // Leave room above explicit URL prices, and reserve the endpoint for no limit.
   const priceCeiling = Math.max(
     2000,
     Math.ceil(
