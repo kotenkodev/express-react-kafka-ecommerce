@@ -1,0 +1,38 @@
+name: Deploy to EC2 (Self-Hosted Runner)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy Application
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Write .env file
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+          chmod 600 .env
+
+      - name: Docker Compose Down
+        run: |
+          docker compose down --remove-orphans
+
+      - name: Docker Compose Up & Build
+        run: |
+          docker compose up --build -d
+
+      - name: Verify Container Status
+        run: |
+          docker compose ps
+
+      - name: Seed Database
+        run: |
+          # Wait for 10 seconds for the healthcheck
+          sleep 10
+          docker compose exec -T product-service npm run db:seed
