@@ -22,7 +22,9 @@ const publicUserSelect = {
   updatedAt: true,
 } as const satisfies Prisma.UserSelect;
 
-export type UserResponse = Prisma.UserGetPayload<{ select: typeof publicUserSelect }>;
+export type UserResponse = Prisma.UserGetPayload<{
+  select: typeof publicUserSelect;
+}>;
 
 // Reuse a random dummy hash so missing accounts still perform password verification.
 let dummyPasswordHash: Promise<string> | undefined;
@@ -63,15 +65,16 @@ export class AuthService {
 
   async login(userData: LoginInput): Promise<LoginResult> {
     const existingUser = await prisma.user.findUnique({
-      where: userData.email !== undefined
-        ? { email: userData.email }
-        : { username: userData.username! },
+      where:
+        userData.email !== undefined
+          ? { email: userData.email }
+          : { username: userData.username! },
       select: { ...publicUserSelect, passwordHash: true },
     });
 
     const isPasswordValid = await verifyPassword(
       userData.password,
-      existingUser?.passwordHash ?? await getDummyPasswordHash(),
+      existingUser?.passwordHash ?? (await getDummyPasswordHash()),
     );
 
     if (!existingUser || !isPasswordValid) {

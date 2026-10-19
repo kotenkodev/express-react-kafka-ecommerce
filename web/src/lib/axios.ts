@@ -37,9 +37,12 @@ instance.interceptors.response.use(
     const status = error.response?.status;
 
     const isAuthError = status === 401 || status === 403;
-    const isRefreshEndpoint = originalRequest.url?.includes("/auth/refresh");
+    const isAuthEndpoint =
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/register") ||
+      originalRequest.url?.includes("/auth/refresh");
 
-    if (isAuthError && !originalRequest._retry && !isRefreshEndpoint) {
+    if (isAuthError && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       try {
@@ -65,6 +68,7 @@ instance.interceptors.response.use(
         return instance(originalRequest);
       } catch (refreshError) {
         useAuthStore.getState().setUser(null);
+        useAuthStore.getState().setAccessToken(null);
         router.navigate("/login");
         return Promise.reject(refreshError);
       }

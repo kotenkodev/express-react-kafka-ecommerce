@@ -8,8 +8,8 @@ interface AuthState {
   accessToken: string | null;
   isLoading: boolean;
   initAuth: () => Promise<void>;
-  setAccessToken: (accessToken: string) => void;
-  setUser: (user: User) => void;
+  setAccessToken: (accessToken: string | null) => void;
+  setUser: (user: User | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -18,8 +18,8 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isLoading: true,
-      setUser: (user: User) => set({ user }),
-      setAccessToken: (token: string) => set({ accessToken: token }),
+      setUser: (user: User | null) => set({ user }),
+      setAccessToken: (token: string | null) => set({ accessToken: token }),
       initAuth: async () => {
         const { accessToken } = get();
         if (!accessToken) {
