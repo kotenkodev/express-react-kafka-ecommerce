@@ -22,7 +22,7 @@ export const getProducts = async (
   return response.data;
 };
 
-export const getCategories = async (): Promise<{ categories: Category[] }> => {
+export const getCategories = async (): Promise<Category[]> => {
   const response = await axios.get(`${AUTH_URL}/categories`);
   return response.data;
 };

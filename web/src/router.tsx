@@ -10,6 +10,7 @@ import AdminProductsPage from "./pages/AdminProductsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import ProductSearchPage from "./pages/ProductSearchPage";
 import MainLayout from "./components/layout/MainLayout";
+import HomeRoute from "./components/guards/HomeRoute";
 
 export const router = createBrowserRouter([
   {
@@ -28,7 +29,7 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "/",
-            element: <ShopPage />,
+            element: <HomeRoute />,
           },
           {
             path: "/orders",
