@@ -18,11 +18,11 @@ export default function OrdersPage() {
   }, [fetchOrders]);
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto w-full max-w-5xl space-y-4">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
               {isAdmin ? "All Orders (Admin)" : "My Orders"}
             </h1>
             <Badge
@@ -33,44 +33,41 @@ export default function OrdersPage() {
               Live SSE
             </Badge>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-0.5 text-xs text-muted-foreground">
             {isAdmin
-              ? "View all platform orders and track their status changes in real-time."
-              : "View your purchases and track delivery in real-time."}
+              ? "Real-time platform orders monitoring and automatic status updates via SSE."
+              : "Track your purchases and courier delivery in real time."}
           </p>
         </div>
 
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 self-start sm:self-auto"
+          className="gap-1.5 self-start sm:self-auto text-xs h-8"
           onClick={() => void fetchOrders()}
           disabled={isLoading}
         >
           <RefreshCw
-            className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`}
             aria-hidden="true"
           />
-          Update
+          Refresh
         </Button>
       </div>
 
       {error ? (
-        <div className="flex flex-col items-center rounded-3xl border border-dashed border-border/70 bg-muted/20 px-4 py-16 text-center">
-          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-            <PackageSearch className="h-7 w-7" aria-hidden="true" />
+        <div className="flex flex-col items-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <PackageSearch className="h-5 w-5" aria-hidden="true" />
           </div>
-          <h2 className="text-base font-semibold">Failed to load orders</h2>
-          <p
-            role="alert"
-            className="mt-1 max-w-sm text-sm text-muted-foreground"
-          >
+          <h2 className="text-sm font-semibold">Failed to load orders</h2>
+          <p role="alert" className="mt-1 max-w-sm text-xs text-muted-foreground">
             {error}
           </p>
           <Button
             variant="outline"
             size="sm"
-            className="mt-4 gap-1.5 shadow-2xs"
+            className="mt-3 text-xs"
             onClick={() => void fetchOrders()}
           >
             <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />

@@ -53,10 +53,11 @@ export default function AnalyticsPage() {
       setAnalytics(analyticsRes);
 
       const now = new Date();
-      const timeLabel = now.toLocaleTimeString("uk-UA", {
+      const timeLabel = now.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+        hour12: false,
       });
 
       const nextPoint: TimeSeriesPoint = {
@@ -87,8 +88,8 @@ export default function AnalyticsPage() {
 
   if (isLoading || !stats || !analytics) {
     return (
-      <div className="flex h-64 items-center justify-center text-muted-foreground">
-        <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
+      <div className="flex h-48 items-center justify-center text-xs text-muted-foreground">
+        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
         Loading analytics...
       </div>
     );
@@ -105,155 +106,156 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto w-full max-w-5xl space-y-4">
+      {/* Page Header */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Orders Analytics (Admin)
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
+              Order Analytics (Admin)
             </h1>
             <Badge
               variant="outline"
-              className="gap-1.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px]"
+              className="gap-1 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px]"
             >
-              <Radio className="h-3 w-3 animate-pulse" />
+              <Radio className="h-2.5 w-2.5 animate-pulse" />
               Live 5s
             </Badge>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Realtime metrics (1-minute sliding window + Elasticsearch stats).
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Real-time performance indicators from 1-min sliding window & Elasticsearch.
           </p>
         </div>
 
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 self-start sm:self-auto"
+          className="gap-1.5 self-start sm:self-auto text-xs h-8"
           onClick={() => void fetchMetrics(false)}
           disabled={isRefreshing}
         >
           <RefreshCw
-            className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`}
             aria-hidden="true"
           />
           Refresh
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-2xl border border-border/60 bg-card p-5 shadow-xs">
+      {/* 4 Stat Cards */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {/* Total Orders */}
+        <Card className="rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Total Orders
             </span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-              <ShoppingCart className="h-4 w-4" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+              <ShoppingCart className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">
+          <div className="mt-1 text-xl font-bold text-foreground">
             {stats.totalOrders}
           </div>
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            All-time total number of orders placed on the platform
-          </p>
+          <p className="text-[10px] text-muted-foreground">All indexed orders</p>
         </Card>
 
-        <Card className="rounded-2xl border border-border/60 bg-card p-5 shadow-xs">
+        {/* Total Revenue */}
+        <Card className="rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Total Revenue
             </span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <DollarSign className="h-4 w-4" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <DollarSign className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">
+          <div className="mt-1 text-xl font-bold text-foreground">
             ${Number(stats.totalRevenue).toFixed(2)}
           </div>
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            All-time total revenue generated by the platform
-          </p>
+          <p className="text-[10px] text-muted-foreground">Platform lifetime revenue</p>
         </Card>
 
-        <Card className="rounded-2xl border border-border/60 bg-card p-5 shadow-xs">
+        {/* Average Order Amount */}
+        <Card className="rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Average Order
             </span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              <TrendingUp className="h-4 w-4" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <TrendingUp className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">
+          <div className="mt-1 text-xl font-bold text-foreground">
             ${Number(stats.avgOrderAmount).toFixed(2)}
           </div>
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            Average order amount across all orders placed on the platform
-          </p>
+          <p className="text-[10px] text-muted-foreground">Average order value</p>
         </Card>
 
-        <Card className="rounded-2xl border border-border/60 bg-card p-5 shadow-xs">
+        {/* Payment Time */}
+        <Card className="rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground">
               Payment Time
             </span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
-              <Clock className="h-4 w-4" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+              <Clock className="h-3.5 w-3.5" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">
+          <div className="mt-1 text-xl font-bold text-foreground">
             {analytics.avgProcessingMs} ms
           </div>
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            Average time to process a payment
-          </p>
+          <p className="text-[10px] text-muted-foreground">Avg processing latency</p>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card p-5 shadow-xs">
-          <CardHeader className="p-0 pb-4">
-            <CardTitle className="text-base font-semibold text-foreground">
-              Average Orders per Minute
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {/* Line Chart */}
+        <Card className="overflow-hidden rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
+          <CardHeader className="p-0 pb-2">
+            <CardTitle className="text-sm font-semibold text-foreground">
+              Orders per Minute
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Sliding window of 60 seconds in real-time
+            <p className="text-[11px] text-muted-foreground">
+              Real-time 60s sliding window
             </p>
           </CardHeader>
           <CardContent className="p-0">
-            <div style={{ width: "100%", height: 280 }}>
+            <div style={{ width: "100%", height: 220 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={history}>
                   <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                   <XAxis
                     dataKey="time"
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 10 }}
                     stroke="currentColor"
                     className="text-muted-foreground"
                   />
                   <YAxis
                     allowDecimals={false}
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 10 }}
                     stroke="currentColor"
                     className="text-muted-foreground"
                   />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "var(--card)",
-                      borderRadius: "0.75rem",
+                      borderRadius: "0.5rem",
                       border: "1px solid var(--border)",
                       color: "var(--foreground)",
-                      fontSize: "12px",
+                      fontSize: "11px",
+                      padding: "6px 8px",
                     }}
                   />
                   <Line
                     type="monotone"
                     dataKey="ordersCount"
-                    name="Замовлень / хв"
+                    name="Orders / min"
                     stroke="#3b82f6"
-                    strokeWidth={2.5}
-                    dot={{ r: 3, fill: "#3b82f6" }}
-                    activeDot={{ r: 5 }}
+                    strokeWidth={2}
+                    dot={{ r: 2.5, fill: "#3b82f6" }}
+                    activeDot={{ r: 4 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -261,26 +263,27 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card p-5 shadow-xs">
-          <CardHeader className="p-0 pb-4">
-            <CardTitle className="text-base font-semibold text-foreground">
+        {/* Pie Chart */}
+        <Card className="overflow-hidden rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
+          <CardHeader className="p-0 pb-2">
+            <CardTitle className="text-sm font-semibold text-foreground">
               Payment Success Rate
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Rate of successful vs failed transactions
+            <p className="text-[11px] text-muted-foreground">
+              Successful vs failed transactions
             </p>
           </CardHeader>
           <CardContent className="p-0">
-            <div style={{ width: "100%", height: 280 }}>
+            <div style={{ width: "100%", height: 220 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={pieData}
                     cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={95}
-                    paddingAngle={4}
+                    cy="45%"
+                    innerRadius={50}
+                    outerRadius={75}
+                    paddingAngle={3}
                     dataKey="value"
                     label={({ name, value }) => `${value}%`}
                   >
@@ -292,16 +295,17 @@ export default function AnalyticsPage() {
                     formatter={(val: unknown) => `${val}%`}
                     contentStyle={{
                       backgroundColor: "var(--card)",
-                      borderRadius: "0.75rem",
+                      borderRadius: "0.5rem",
                       border: "1px solid var(--border)",
                       color: "var(--foreground)",
-                      fontSize: "12px",
+                      fontSize: "11px",
+                      padding: "6px 8px",
                     }}
                   />
                   <Legend
                     verticalAlign="bottom"
                     iconType="circle"
-                    wrapperStyle={{ fontSize: "12px", paddingTop: "10px" }}
+                    wrapperStyle={{ fontSize: "11px", paddingTop: "4px" }}
                   />
                 </PieChart>
               </ResponsiveContainer>
