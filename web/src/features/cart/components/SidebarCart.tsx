@@ -18,8 +18,16 @@ import { Button } from "@/components/ui/button";
 import { useCartStore } from "../store/cartStore";
 
 export function SidebarCart() {
-  const { items, removeItem, updateQty, clear, total, count, setIsOpen, setCheckoutOpen } =
-    useCartStore();
+  const {
+    items,
+    removeItem,
+    updateQty,
+    clear,
+    total,
+    count,
+    setIsOpen,
+    setCheckoutOpen,
+  } = useCartStore();
 
   const totalCount = count();
   const totalPrice = total();

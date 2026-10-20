@@ -18,7 +18,7 @@ export const login = async (
 };
 
 export const refreshToken = async (): Promise<{ accessToken: string }> => {
-  const response = await axios.post(`${AUTH_URL}/refresh-token`);
+  const response = await axios.post(`${AUTH_URL}/refresh`);
   return response.data;
 };
 

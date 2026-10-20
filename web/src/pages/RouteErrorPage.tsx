@@ -23,7 +23,10 @@ export default function RouteErrorPage() {
 
         <div className="flex flex-col items-center px-6 py-14 text-center sm:px-12 sm:py-20">
           <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-muted/70 text-muted-foreground shadow-2xs">
-            <PackageSearch className="h-10 w-10 stroke-[1.5]" aria-hidden="true" />
+            <PackageSearch
+              className="h-10 w-10 stroke-[1.5]"
+              aria-hidden="true"
+            />
           </div>
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Something went wrong
@@ -37,10 +40,7 @@ export default function RouteErrorPage() {
           </p>
 
           <div className="mt-8 flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            <Button
-              render={<Link to="/" />}
-              className="gap-2 shadow-sm"
-            >
+            <Button render={<Link to="/" />} className="gap-2 shadow-sm">
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back to catalog
             </Button>

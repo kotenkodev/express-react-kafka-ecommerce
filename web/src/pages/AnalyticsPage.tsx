@@ -58,7 +58,6 @@ export default function AnalyticsPage() {
     refetchInterval: 5000,
   });
 
-  // Append new sliding window point to time-series history
   useEffect(() => {
     if (!analytics) return;
 

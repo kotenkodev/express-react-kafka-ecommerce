@@ -210,7 +210,7 @@ export default function RegisterForm() {
                 className="pr-10"
                 aria-invalid={Boolean(
                   formik.touched.passwordConfirm &&
-                    formik.errors.passwordConfirm,
+                  formik.errors.passwordConfirm,
                 )}
               />
               <button

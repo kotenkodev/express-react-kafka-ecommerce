@@ -34,4 +34,3 @@ export interface SearchOrdersParams {
   page?: number;
   limit?: number;
 }
-

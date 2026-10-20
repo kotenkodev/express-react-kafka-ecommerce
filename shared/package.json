@@ -21,7 +21,8 @@
     "build": "npm run db:generate && tsc",
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@prisma/client": "5.22.0",

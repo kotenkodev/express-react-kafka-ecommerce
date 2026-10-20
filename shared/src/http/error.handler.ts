@@ -7,7 +7,11 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
     return;
   }
 
-  if (error instanceof SyntaxError && "status" in error && error.status === 400) {
+  if (
+    error instanceof SyntaxError &&
+    "status" in error &&
+    error.status === 400
+  ) {
     res.status(400).json({ error: "Invalid JSON body" });
     return;
   }
@@ -15,7 +19,8 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
   if (
     error instanceof HttpError &&
     Number.isInteger(error.statusCode) &&
-    error.statusCode >= 400 && error.statusCode <= 599
+    error.statusCode >= 400 &&
+    error.statusCode <= 599
   ) {
     res.status(error.statusCode).json({ error: error.message });
     return;

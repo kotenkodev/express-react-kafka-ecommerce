@@ -278,12 +278,15 @@ services:
         condition: service_healthy
       kafka-init:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3001
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgbouncer:6432/${POSTGRES_DB}?schema=public&pgbouncer=true
       DIRECT_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
       KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
     healthcheck:
       test:
         [

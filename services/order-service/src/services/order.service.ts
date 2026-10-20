@@ -110,15 +110,18 @@ export class OrderService {
     return await prisma.order.findMany({
       ...(user.role === "user" ? { where: { userId: user.id } } : {}),
       include: {
-        user: user.role === "admin" ? {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        } : false,
+        user:
+          user.role === "admin"
+            ? {
+                select: {
+                  id: true,
+                  username: true,
+                  firstName: true,
+                  lastName: true,
+                  email: true,
+                },
+              }
+            : false,
         items: {
           include: {
             product: true,

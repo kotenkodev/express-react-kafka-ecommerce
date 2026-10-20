@@ -27,7 +27,9 @@ export const env = {
   searchServiceUrl: raw.SEARCH_SERVICE_URL,
   analyticsServiceUrl: raw.ANALYTICS_SERVICE_URL,
   jwtSecret: raw.JWT_SECRET,
-  trustProxy: raw.TRUST_PROXY.split(",").map((value) => value.trim()).filter(Boolean),
+  trustProxy: raw.TRUST_PROXY.split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
   corsOrigins: raw.CORS_ORIGINS?.split(",").map((o) => o.trim()) || [
     "http://localhost:5173",
   ],

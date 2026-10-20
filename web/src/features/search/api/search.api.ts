@@ -6,7 +6,8 @@ export async function searchOrders(
 ): Promise<SearchOrdersResponse> {
   const cleanParams: Record<string, unknown> = {};
   if (params.q?.trim()) cleanParams.q = params.q.trim();
-  if (params.status && params.status !== "ALL") cleanParams.status = params.status;
+  if (params.status && params.status !== "ALL")
+    cleanParams.status = params.status;
   if (params.page) cleanParams.page = params.page;
   if (params.limit) cleanParams.limit = params.limit;
 
@@ -15,4 +16,3 @@ export async function searchOrders(
   });
   return data;
 }
-

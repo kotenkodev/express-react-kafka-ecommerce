@@ -76,14 +76,12 @@ export default function ProductSearchPage() {
   );
   const [debouncedMinPrice, debouncedMaxPrice] = debouncedPriceRange.split(":");
 
-  // TanStack Query for categories
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
     staleTime: 5 * 60 * 1000,
   });
 
-  // TanStack Query for products list
   const {
     data: productsData,
     isLoading,

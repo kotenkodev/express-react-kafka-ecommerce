@@ -65,4 +65,3 @@ export const useOrdersStore = create<OrdersState>((set) => ({
       orders: [order, ...state.orders.filter((o) => o.id !== order.id)],
     })),
 }));
-

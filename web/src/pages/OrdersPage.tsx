@@ -4,14 +4,12 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 import { useOrderSSE } from "@/features/orders/hooks/useOrderSSE";
 import { getOrders } from "@/features/orders/api/orders.api";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { PackageSearch, RefreshCw, Radio } from "lucide-react";
+import { PackageSearch, RefreshCw } from "lucide-react";
 import { getErrorMessage } from "@/lib/error";
 
 export default function OrdersPage() {
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
 
-  // Subscribe to live SSE updates which keep TanStack Query cache updated in real time
   useOrderSSE();
 
   const {

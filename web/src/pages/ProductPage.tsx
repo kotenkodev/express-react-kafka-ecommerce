@@ -223,9 +223,7 @@ function ProductDetails({ id }: { id: string | undefined }) {
                   </>
                 ) : (
                   <Button disabled className="w-full rounded-xl h-10 text-xs">
-                    {product.stock === 0
-                      ? "Out of stock"
-                      : "Max stock in cart"}
+                    {product.stock === 0 ? "Out of stock" : "Max stock in cart"}
                   </Button>
                 )}
               </div>

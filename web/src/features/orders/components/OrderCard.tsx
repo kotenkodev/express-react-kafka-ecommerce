@@ -1,4 +1,10 @@
-import { CalendarDays, CreditCard, Package, Truck, UserRound } from "lucide-react";
+import {
+  CalendarDays,
+  CreditCard,
+  Package,
+  Truck,
+  UserRound,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import type { Order, PaymentStatus } from "../types";
 import { Link } from "react-router-dom";

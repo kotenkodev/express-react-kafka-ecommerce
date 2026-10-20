@@ -33,10 +33,8 @@ export function useOrderSSE() {
 
         const targetId = data.orderId || data.id;
 
-        // Update local Zustand store
         updateOrderStatus(data);
 
-        // Update TanStack Query cache directly
         queryClient.setQueryData<Order[]>(["orders"], (oldOrders) => {
           if (!oldOrders) return oldOrders;
           return oldOrders.map((o) =>

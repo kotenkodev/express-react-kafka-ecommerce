@@ -355,6 +355,8 @@ services:
         condition: service_healthy
       kafka-init:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     ports:
       - "${ORDER_SERVICE_PORT:-3001}:${ORDER_SERVICE_PORT:-3001}"
     environment:
@@ -362,6 +364,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin123}@pgbouncer:6432/${POSTGRES_DB:-kafkashop}?schema=public&pgbouncer=true
       DIRECT_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin123}@postgres:5432/${POSTGRES_DB:-kafkashop}?schema=public
       KAFKA_BROKERS: kafka:29092
+      REDIS_URL: redis://redis:6379
     volumes:
       - ./services/order-service/src:/app/services/order-service/src
       - ./services/order-service/tsconfig.json:/app/services/order-service/tsconfig.json:ro

@@ -53,9 +53,7 @@ export default function OrderTable({
         <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
           <PackageSearch className="h-5 w-5" aria-hidden="true" />
         </div>
-        <h2 className="text-sm font-semibold text-foreground">
-          No orders yet
-        </h2>
+        <h2 className="text-sm font-semibold text-foreground">No orders yet</h2>
         <p className="mt-1 max-w-sm text-xs text-muted-foreground">
           Orders will appear here once they have been placed.
         </p>
