@@ -16,8 +16,12 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "../store/cartStore";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { toast } from "sonner";
 
 export function SidebarCart() {
+  const navigate = useNavigate();
+  const { accessToken } = useAuthStore();
   const {
     items,
     removeItem,
@@ -33,6 +37,12 @@ export function SidebarCart() {
   const totalPrice = total();
 
   const handleCheckout = () => {
+    if (!accessToken) {
+      toast.info("Please sign in to place your order");
+      setIsOpen(false);
+      navigate("/login");
+      return;
+    }
     setCheckoutOpen(true);
   };
 

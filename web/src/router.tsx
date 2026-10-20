@@ -26,32 +26,37 @@ export const router = createBrowserRouter([
         element: <RegisterPage />,
       },
       {
-        element: <ProtectedRoute />,
+        element: <MainLayout />,
         children: [
+          // Public routes (anyone can browse without logging in)
           {
-            element: <MainLayout />,
+            path: "/",
+            element: <HomeRoute />,
+          },
+          {
+            path: "/products/:id",
+            element: <ProductPage />,
+          },
+          {
+            path: "/product-search",
+            element: <ProductSearchPage />,
+          },
+
+          // User Protected routes (requires login)
+          {
+            element: <ProtectedRoute />,
             children: [
-              {
-                path: "/",
-                element: <HomeRoute />,
-              },
-              {
-                path: "/products/:id",
-                element: <ProductPage />,
-              },
               {
                 path: "/orders",
                 element: <OrdersPage />,
               },
-              {
-                element: <RoleRoute roles={["user"]} />,
-                children: [
-                  {
-                    path: "/product-search",
-                    element: <ProductSearchPage />,
-                  },
-                ],
-              },
+            ],
+          },
+
+          // Admin Protected routes (requires admin role)
+          {
+            element: <ProtectedRoute />,
+            children: [
               {
                 element: <RoleRoute roles={["admin"]} />,
                 children: [

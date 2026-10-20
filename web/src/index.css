@@ -51,48 +51,47 @@
 :root {
   /* --------------------------------------------------------------------------
    * Apache Kafka Premium Dark Theme
-   * "Darker premium but not plain black" canvas (#0e131f / #101524),
-   * paired with warm golden amber / darker yellow primary & secondary
-   * (replacing cyan/blue across buttons, badges, icons, and highlights).
+   * Elevated dark slate canvas (#151b28), paired with rich warm amber gold
+   * and high-performance technical accents.
    * -------------------------------------------------------------------------- */
   
-  /* Canvas: Deep premium obsidian slate (not pitch black) */
-  --background: oklch(0.15 0.022 258);           /* #0e131f - Deep luxury obsidian */
+  /* Canvas: Lighter, softer dark slate-navy (comfortable, elevated, non-black) */
+  --background: oklch(0.20 0.024 258);           /* #161c2b - Elevated soft dark slate */
   --foreground: oklch(0.96 0.008 245);           /* #f1f5f9 - Radiant soft off-white */
   
   /* Elevated Cards & Panels */
-  --card: oklch(0.19 0.028 258);                 /* #151b2a - Rich elevated surface */
+  --card: oklch(0.24 0.028 258);                 /* #1e2638 - Crisp elevated surface */
   --card-foreground: oklch(0.96 0.008 245);
-  --popover: oklch(0.19 0.028 258);
+  --popover: oklch(0.24 0.028 258);
   --popover-foreground: oklch(0.96 0.008 245);
   
-  /* Primary: Vibrant Dark Yellow / Rich Warm Amber (replaces cyan/blue on buttons, badges, icons) */
-  --primary: oklch(0.74 0.17 78);                /* #eab308 / #f59e0b - Luminous warm gold */
+  /* Primary: Vibrant Dark Yellow / Rich Warm Amber */
+  --primary: oklch(0.75 0.17 78);                /* #f59e0b / #eab308 - Luminous warm gold */
   --primary-foreground: oklch(0.15 0.03 78);     /* #1a1200 - High contrast dark text on yellow */
   
   /* Secondary: Darker Burnished Yellow / Deep Amber */
-  --secondary: oklch(0.35 0.10 78);              /* #713f12 / #854d0e - Deep rich dark amber */
+  --secondary: oklch(0.38 0.11 78);              /* #854d0e - Deep rich dark amber */
   --secondary-foreground: oklch(0.92 0.13 85);    /* #fef08a - Bright golden amber text */
   
   /* Muted metadata & background rails */
-  --muted: oklch(0.22 0.025 258);                /* #1c2336 */
-  --muted-foreground: oklch(0.68 0.035 250);     /* #94a3b8 - Technical metallic slate */
+  --muted: oklch(0.26 0.025 258);                /* #222c40 */
+  --muted-foreground: oklch(0.70 0.035 250);     /* #94a3b8 - Technical metallic slate */
   
   /* Interactive Accent: Honey-gold hover pill */
-  --accent: oklch(0.26 0.06 78);                 /* Warm amber hover */
-  --accent-foreground: oklch(0.90 0.14 82);      /* #fde047 */
+  --accent: oklch(0.30 0.06 78);                 /* Warm amber hover */
+  --accent-foreground: oklch(0.92 0.14 82);      /* #fde047 */
   
   /* Destructive / DLQ alerts */
   --destructive: oklch(0.62 0.22 25);            /* Kafka DLQ coral #f43f5e */
   
   /* Precision borders & inputs */
-  --border: oklch(0.29 0.035 255 / 65%);         /* #243048 - Fine technical border */
-  --input: oklch(0.29 0.035 255 / 75%);
-  --ring: oklch(0.74 0.17 78);                   /* Golden focus ring halo */
+  --border: oklch(0.34 0.035 255 / 65%);         /* #2e3a52 - Fine technical border */
+  --input: oklch(0.34 0.035 255 / 75%);
+  --ring: oklch(0.75 0.17 78);                   /* Golden focus ring halo */
   
   /* Kafka Telemetry Charts */
-  --chart-1: oklch(0.74 0.17 78);                /* Primary Amber Gold */
-  --chart-2: oklch(0.60 0.14 75);                /* Darker Amber */
+  --chart-1: oklch(0.75 0.17 78);                /* Primary Amber Gold */
+  --chart-2: oklch(0.62 0.14 75);                /* Darker Amber */
   --chart-3: oklch(0.82 0.15 88);                /* Pale Gold */
   --chart-4: oklch(0.68 0.18 155);               /* Heartbeat Emerald */
   --chart-5: oklch(0.62 0.22 25);                /* DLQ Coral */
@@ -100,14 +99,14 @@
   --radius: 0.5625rem;                           /* Refined 9px border radius */
   
   /* Sidebar Navigation */
-  --sidebar: oklch(0.17 0.025 258);
+  --sidebar: oklch(0.22 0.025 258);
   --sidebar-foreground: oklch(0.96 0.008 245);
-  --sidebar-primary: oklch(0.74 0.17 78);
+  --sidebar-primary: oklch(0.75 0.17 78);
   --sidebar-primary-foreground: oklch(0.15 0.03 78);
-  --sidebar-accent: oklch(0.26 0.06 78);
-  --sidebar-accent-foreground: oklch(0.90 0.14 82);
-  --sidebar-border: oklch(0.29 0.035 255 / 65%);
-  --sidebar-ring: oklch(0.74 0.17 78);
+  --sidebar-accent: oklch(0.30 0.06 78);
+  --sidebar-accent-foreground: oklch(0.92 0.14 82);
+  --sidebar-border: oklch(0.34 0.035 255 / 65%);
+  --sidebar-ring: oklch(0.75 0.17 78);
 
   /* Custom Stream Scrollbar */
   --scrollbar-track: transparent;
@@ -117,45 +116,45 @@
 }
 
 .dark {
-  /* Aligned premium dark values */
-  --background: oklch(0.14 0.022 258);
+  /* Aligned values */
+  --background: oklch(0.20 0.024 258);
   --foreground: oklch(0.96 0.008 245);
-  --card: oklch(0.18 0.028 258);
+  --card: oklch(0.24 0.028 258);
   --card-foreground: oklch(0.96 0.008 245);
-  --popover: oklch(0.18 0.028 258);
+  --popover: oklch(0.24 0.028 258);
   --popover-foreground: oklch(0.96 0.008 245);
   
-  --primary: oklch(0.74 0.17 78);
+  --primary: oklch(0.75 0.17 78);
   --primary-foreground: oklch(0.15 0.03 78);
   
-  --secondary: oklch(0.35 0.10 78);
+  --secondary: oklch(0.38 0.11 78);
   --secondary-foreground: oklch(0.92 0.13 85);
   
-  --muted: oklch(0.22 0.025 258);
-  --muted-foreground: oklch(0.68 0.035 250);
+  --muted: oklch(0.26 0.025 258);
+  --muted-foreground: oklch(0.70 0.035 250);
   
-  --accent: oklch(0.26 0.06 78);
-  --accent-foreground: oklch(0.90 0.14 82);
+  --accent: oklch(0.30 0.06 78);
+  --accent-foreground: oklch(0.92 0.14 82);
   
   --destructive: oklch(0.62 0.22 25);
-  --border: oklch(0.29 0.035 255 / 65%);
-  --input: oklch(0.29 0.035 255 / 75%);
-  --ring: oklch(0.74 0.17 78);
+  --border: oklch(0.34 0.035 255 / 65%);
+  --input: oklch(0.34 0.035 255 / 75%);
+  --ring: oklch(0.75 0.17 78);
   
-  --chart-1: oklch(0.74 0.17 78);
-  --chart-2: oklch(0.60 0.14 75);
+  --chart-1: oklch(0.75 0.17 78);
+  --chart-2: oklch(0.62 0.14 75);
   --chart-3: oklch(0.82 0.15 88);
   --chart-4: oklch(0.68 0.18 155);
   --chart-5: oklch(0.62 0.22 25);
   
-  --sidebar: oklch(0.16 0.025 258);
+  --sidebar: oklch(0.22 0.025 258);
   --sidebar-foreground: oklch(0.96 0.008 245);
-  --sidebar-primary: oklch(0.74 0.17 78);
+  --sidebar-primary: oklch(0.75 0.17 78);
   --sidebar-primary-foreground: oklch(0.15 0.03 78);
-  --sidebar-accent: oklch(0.26 0.06 78);
-  --sidebar-accent-foreground: oklch(0.90 0.14 82);
-  --sidebar-border: oklch(0.29 0.035 255 / 65%);
-  --sidebar-ring: oklch(0.74 0.17 78);
+  --sidebar-accent: oklch(0.30 0.06 78);
+  --sidebar-accent-foreground: oklch(0.92 0.14 82);
+  --sidebar-border: oklch(0.34 0.035 255 / 65%);
+  --sidebar-ring: oklch(0.75 0.17 78);
 
   --scrollbar-track: transparent;
   --scrollbar-thumb: color-mix(in oklch, var(--primary) 28%, transparent);

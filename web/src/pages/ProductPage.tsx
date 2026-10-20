@@ -62,7 +62,7 @@ function ProductDetails({ id }: { id: string | undefined }) {
       : "Product Not Found";
 
   const pageDesc = product
-    ? `${product.description} Available in ${product.category} for $${product.price.toFixed(2)}. In stock: ${product.stock}.`
+    ? `${product.description} Available in ${product.category} for $${Number(product.price || 0).toFixed(2)}. In stock: ${product.stock}.`
     : "View full product specifications, real-time inventory availability, and order with instant fulfillment.";
 
   return (
@@ -77,6 +77,7 @@ function ProductDetails({ id }: { id: string | undefined }) {
         variant="ghost"
         size="sm"
         render={<Link to="/" />}
+        nativeButton={false}
         className="gap-2 text-xs text-muted-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" />

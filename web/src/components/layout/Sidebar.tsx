@@ -20,10 +20,13 @@ import {
   Boxes,
   ShoppingBag,
   LogOut,
+  LogIn,
+  UserPlus,
   ShieldCheck,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { logout as logoutApi } from "@/features/auth/api/auth.api";
 import { toast } from "sonner";
@@ -31,8 +34,9 @@ import { toast } from "sonner";
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { setUser, setAccessToken, user } = useAuthStore();
+  const { setUser, setAccessToken, user, accessToken } = useAuthStore();
   const isAdmin = user?.role === "admin";
+  const isAuthenticated = Boolean(accessToken);
 
   const handleLogout = async () => {
     try {
@@ -49,12 +53,12 @@ export function AppSidebar() {
   const displayName =
     user?.firstName && user?.lastName
       ? `${user.firstName} ${user.lastName}`
-      : user?.username || "Account";
+      : user?.username || "Guest";
 
   const userInitials =
     user?.firstName && user?.lastName
       ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
-      : (user?.username?.[0] || "U").toUpperCase();
+      : (user?.username?.[0] || "G").toUpperCase();
 
   const storeItems = [
     { title: "Storefront", url: "/", icon: Store },
@@ -67,11 +71,15 @@ export function AppSidebar() {
           },
         ]
       : []),
-    {
-      title: isAdmin ? "All Orders" : "My Orders",
-      url: "/orders",
-      icon: Package,
-    },
+    ...(isAuthenticated
+      ? [
+          {
+            title: isAdmin ? "All Orders" : "My Orders",
+            url: "/orders",
+            icon: Package,
+          },
+        ]
+      : []),
   ];
 
   const adminItems = [
@@ -160,45 +168,69 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-2.5 group-data-[collapsible=icon]:p-1.5 gap-2">
-        <div
-          title={`${displayName} (${user?.email || ""})`}
-          className="flex items-center gap-2.5 rounded-xl bg-sidebar-accent/50 p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:justify-center"
-        >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold text-xs shadow-xs">
-            {userInitials}
-          </div>
-          <div className="flex flex-col min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold text-sidebar-foreground truncate">
-                {displayName}
-              </span>
-              {isAdmin && (
-                <Badge
-                  variant="secondary"
-                  className="text-[9px] h-4 px-1 py-0 font-medium leading-none"
-                >
-                  Admin
-                </Badge>
-              )}
-            </div>
-            <span className="text-[11px] text-muted-foreground truncate">
-              {user?.email || user?.username}
-            </span>
-          </div>
-        </div>
-
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Sign out"
-              onClick={handleLogout}
-              className="w-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+        {isAuthenticated ? (
+          <>
+            <div
+              title={`${displayName} (${user?.email || ""})`}
+              className="flex items-center gap-2.5 rounded-xl bg-sidebar-accent/50 p-2 group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:justify-center"
             >
-              <LogOut className="h-4 w-4" />
-              <span>Sign out</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold text-xs shadow-xs">
+                {userInitials}
+              </div>
+              <div className="flex flex-col min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-sidebar-foreground truncate">
+                    {displayName}
+                  </span>
+                  {isAdmin && (
+                    <Badge
+                      variant="secondary"
+                      className="text-[9px] h-4 px-1 py-0 font-medium leading-none"
+                    >
+                      Admin
+                    </Badge>
+                  )}
+                </div>
+                <span className="text-[11px] text-muted-foreground truncate">
+                  {user?.email || user?.username}
+                </span>
+              </div>
+            </div>
+
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Sign out"
+                  onClick={handleLogout}
+                  className="w-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign out</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </>
+        ) : (
+          <div className="flex flex-col gap-1.5 group-data-[collapsible=icon]:hidden">
+            <Button
+              size="sm"
+              className="w-full gap-2 text-xs font-semibold"
+              render={<Link to="/login" />}
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              <span>Sign In</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2 text-xs"
+              render={<Link to="/register" />}
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              <span>Register</span>
+            </Button>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
