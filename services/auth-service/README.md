@@ -212,7 +212,7 @@ Successful response (`200 OK`):
 }
 ```
 
-The refresh token is issued separately through a `Set-Cookie` response header.
+The refresh token is issued separately through a `Set-Cookie` response header. After session creation, a rate-limit refund failure is logged but does not turn the successful login into an error. Rate-limit admission checks remain fail-closed when enabled.
 
 Cookie properties:
 
@@ -252,7 +252,17 @@ The service validates the refresh token format, hashes it, and looks up the corr
 
 If the session is valid, it retrieves the associated user and generates a new access token using the user's current role and email.
 
-**Note:** Refresh requests issue a new access token without rotating the existing refresh token.
+Each successful refresh atomically consumes the current token and returns its replacement through the HTTP-only `refreshToken` cookie. Clients must retain the latest `Set-Cookie` value, including clients that submit refresh tokens in the request body. The JSON response still contains only `accessToken`.
+
+Refresh sessions have an absolute expiration: rotation preserves the remaining Redis TTL and sets the cookie's Max-Age accordingly. It does not extend the original session lifetime.
+
+Redis stores one hash per token family under `refresh:v2:{familyId}`, containing the user ID, current token hash, and spent token hashes. Tokens remain 64 hexadecimal characters: a random 128-bit family ID and a random 128-bit secret. Raw secrets are not stored.
+
+Reusing a spent token revokes the entire family, including its newest replacement. Concurrent refreshes with the same token are treated as replay: at most one rotates successfully, and the losing request revokes the family. Clients must serialize refreshes across requests/tabs. If a successful rotation response is lost, retrying the old token requires signing in again.
+
+**Deployment:** Legacy `refresh:<hash>` sessions are not accepted by the new format. Existing users must sign in again after deployment; legacy Redis keys expire naturally. Deploy auth instances together rather than mixing versions. Previously issued access tokens remain valid until their normal expiration.
+
+Failures during user lookup or access-token signing do not consume a refresh token. Redis session-operation failures return HTTP 503. A connection failure after Redis applied a rotation may still require signing in again.
 
 ### POST `/api/auth/logout`
 
@@ -272,6 +282,8 @@ Response:
 ```
 
 When a refresh token is provided, its corresponding Redis session is deleted.
+
+Logout accepts a current or spent token and revokes its whole family. An unknown token secret cannot revoke a family merely by identifying it.
 
 Logout also succeeds when no refresh token is supplied.
 

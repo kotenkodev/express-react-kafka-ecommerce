@@ -40,7 +40,16 @@ export class AuthController {
       return res.status(401).json({ error: "Refresh token required" });
     }
 
-    const { accessToken } = await authService.refresh(refreshToken);
+    const {
+      accessToken,
+      refreshToken: replacement,
+      refreshTokenExpiresInMs,
+    } = await authService.refresh(refreshToken);
+
+    res.cookie("refreshToken", replacement, {
+      ...COOKIE_OPTIONS,
+      maxAge: refreshTokenExpiresInMs,
+    });
 
     res.status(200).json({ accessToken });
   }

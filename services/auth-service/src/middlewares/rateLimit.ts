@@ -75,6 +75,8 @@ export async function refundSuccessfulLogin(req: Request): Promise<void> {
   try {
     await rateLimiters.loginFailures.reward(loginFailureKey(req), 1);
   } catch {
-    throw new AuthError("Authentication temporarily unavailable.", 503);
+    console.error(
+      "[Auth] Failed to refund successful login rate-limit attempt.",
+    );
   }
 }

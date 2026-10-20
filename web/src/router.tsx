@@ -28,7 +28,6 @@ export const router = createBrowserRouter([
       {
         element: <MainLayout />,
         children: [
-          // Public routes (anyone can browse without logging in)
           {
             path: "/",
             element: <HomeRoute />,
@@ -42,7 +41,6 @@ export const router = createBrowserRouter([
             element: <ProductSearchPage />,
           },
 
-          // User Protected routes (requires login)
           {
             element: <ProtectedRoute />,
             children: [
@@ -53,7 +51,6 @@ export const router = createBrowserRouter([
             ],
           },
 
-          // Admin Protected routes (requires admin role)
           {
             element: <ProtectedRoute />,
             children: [

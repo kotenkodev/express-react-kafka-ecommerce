@@ -5,6 +5,7 @@ import {
   createRefreshSession,
   deleteRefreshSession,
   getUserIdFromRefreshToken,
+  rotateRefreshSession,
 } from "../lib/tokens";
 import { generateAccessToken } from "../lib/jwt";
 import { AuthError } from "../lib/error";
@@ -92,7 +93,11 @@ export class AuthService {
     return { accessToken, refreshToken, user };
   }
 
-  async refresh(refreshToken: string): Promise<{ accessToken: string }> {
+  async refresh(refreshToken: string): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    refreshTokenExpiresInMs: number;
+  }> {
     const userId = await getUserIdFromRefreshToken(refreshToken);
 
     if (!userId) {
@@ -114,7 +119,8 @@ export class AuthService {
       email: user.email,
     });
 
-    return { accessToken };
+    const rotated = await rotateRefreshSession(refreshToken, userId);
+    return { accessToken, ...rotated };
   }
 
   async logout(refreshToken: string): Promise<void> {

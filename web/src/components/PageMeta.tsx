@@ -28,10 +28,8 @@ export function PageMeta({
   const resolvedOgDesc = ogDescription || description;
 
   useEffect(() => {
-    // 1. Update document title
     document.title = fullTitle;
 
-    // 2. Synchronize meta tags in document head
     const setMetaTag = (
       attribute: "name" | "property",
       key: string,
@@ -61,9 +59,15 @@ export function PageMeta({
     } else {
       setMetaTag("name", "robots", "index, follow");
     }
-  }, [fullTitle, description, resolvedOgTitle, resolvedOgDesc, ogImage, noIndex]);
+  }, [
+    fullTitle,
+    description,
+    resolvedOgTitle,
+    resolvedOgDesc,
+    ogImage,
+    noIndex,
+  ]);
 
-  // React 19 natively hoists title and meta elements in JSX as well
   return (
     <>
       <title>{fullTitle}</title>
@@ -80,4 +84,3 @@ export function PageMeta({
 }
 
 export default PageMeta;
-

@@ -7,6 +7,7 @@ import { RateLimiterMemory } from "rate-limiter-flexible";
 
 process.env.JWT_SECRET = "auth-test-secret-not-for-production";
 process.env.NODE_ENV = "test";
+process.env.ENABLE_RATE_LIMIT = "true";
 
 test("auth HTTP contracts", async (t) => {
   const { authRoutes } = await import("../src/routes/auth.routes");
@@ -128,7 +129,7 @@ test("auth HTTP contracts", async (t) => {
       const lookup = mockUser("findUnique", async (args: any) =>
         selectRecord(args.select),
       );
-      mock.method(getRedis(), "set", async () => "OK" as const);
+      mock.method(getRedis(), "eval", async () => 1);
       for (const identity of [
         { email: " ALICE@EXAMPLE.COM " },
         { username: " Alice " },
@@ -158,8 +159,7 @@ test("auth HTTP contracts", async (t) => {
   await t.test(
     "malformed refresh/logout tokens are rejected without Redis access",
     async () => {
-      const get = mock.method(getRedis(), "get", async () => null);
-      const del = mock.method(getRedis(), "del", async () => 0);
+      const evaluate = mock.method(getRedis(), "eval", async () => null);
       for (const path of ["/refresh", "/logout"]) {
         for (const refreshToken of [
           null,
@@ -177,8 +177,7 @@ test("auth HTTP contracts", async (t) => {
           400,
         );
       }
-      assert.equal(get.mock.callCount(), 0);
-      assert.equal(del.mock.callCount(), 0);
+      assert.equal(evaluate.mock.callCount(), 0);
       assert.equal((await request("/refresh")).status, 401);
       assert.equal((await request("/logout")).status, 200);
     },
@@ -187,8 +186,7 @@ test("auth HTTP contracts", async (t) => {
   await t.test(
     "valid-format invalid sessions return 401; cookie and body logout revoke sessions",
     async () => {
-      mock.method(getRedis(), "get", async () => null);
-      const del = mock.method(getRedis(), "del", async () => 1);
+      const evaluate = mock.method(getRedis(), "eval", async () => null);
       const token = "a".repeat(64);
       assert.equal(
         (await request("/refresh", { refreshToken: token })).status,
@@ -208,9 +206,64 @@ test("auth HTTP contracts", async (t) => {
         response.headers.get("set-cookie")!,
         /Expires=Thu, 01 Jan 1970/,
       );
-      assert.equal(del.mock.callCount(), 2);
+      assert.equal(evaluate.mock.callCount(), 3);
     },
   );
+
+  await t.test("refund failure still delivers the created login session", async () => {
+    mockUser("findUnique", async (args: any) => selectRecord(args.select));
+    const create = mock.method(getRedis(), "eval", async () => 1);
+    mock.method(rateLimiters.loginFailures, "reward", async () => {
+      throw new Error("Redis unavailable");
+    });
+    const logged = mock.method(console, "error", () => {});
+    const response = await request("/login", {
+      username: "Alice", password: "Correct!Password1",
+    });
+    assert.equal(response.status, 200);
+    assert.ok((await response.json() as any).accessToken);
+    assert.match(response.headers.get("set-cookie")!, /refreshToken=[a-f0-9]{64}/);
+    assert.equal(create.mock.callCount(), 1);
+    assert.equal(logged.mock.callCount(), 1);
+  });
+
+  await t.test("refresh rotates the cookie with the remaining session lifetime", async () => {
+    mockUser("findUnique", async () => publicUser);
+    const evaluate = mock.method(getRedis(), "eval", async () => [publicUser.id, 12_000]);
+    const token = "a".repeat(64);
+    const response = await request("/refresh", {}, { Cookie: `refreshToken=${token}` });
+    assert.equal(response.status, 200);
+    const cookie = response.headers.get("set-cookie")!;
+    assert.match(cookie, /Max-Age=12/);
+    assert.match(cookie, /HttpOnly/);
+    assert.match(cookie, /Path=\/api\/auth/);
+    assert.match(cookie, /SameSite=Lax/);
+    assert.notEqual(cookie.match(/refreshToken=([^;]+)/)![1], token);
+    assert.ok((await response.json() as any).accessToken);
+    assert.equal(evaluate.mock.callCount(), 2);
+    assert.equal(evaluate.mock.calls[1].arguments[3], "rotate");
+  });
+
+  await t.test("failed refresh lookup does not consume the token", async () => {
+    const evaluate = mock.method(getRedis(), "eval", async () => [publicUser.id, 12_000]);
+    mockUser("findUnique", async () => { throw new AuthError("Database unavailable", 503); });
+    const response = await request("/refresh", { refreshToken: "a".repeat(64) });
+    assert.equal(response.status, 503);
+    assert.equal(response.headers.get("set-cookie"), null);
+    assert.equal(evaluate.mock.callCount(), 1);
+  });
+
+  await t.test("rotation storage failure returns 503 without issuing replacement cookies", async () => {
+    mockUser("findUnique", async () => publicUser);
+    let calls = 0;
+    mock.method(getRedis(), "eval", async () => {
+      if (++calls === 1) return [publicUser.id, 12_000];
+      throw new Error("Redis unavailable");
+    });
+    const response = await request("/refresh", { refreshToken: "a".repeat(64) });
+    assert.equal(response.status, 503);
+    assert.equal(response.headers.get("set-cookie"), null);
+  });
 
   const registration = {
     username: "Alice",
@@ -223,7 +276,7 @@ test("auth HTTP contracts", async (t) => {
     "registration and refresh have independent limits with Retry-After",
     async () => {
       mockUser("create", async () => publicUser);
-      mock.method(getRedis(), "get", async () => null);
+      mock.method(getRedis(), "eval", async () => null);
       for (let i = 0; i < rateLimiters.register.points; i++) {
         assert.equal((await request("/register", registration)).status, 201);
       }
@@ -283,7 +336,7 @@ test("auth HTTP contracts", async (t) => {
     "successful logins refund their attempt without removing previous failures",
     async () => {
       mockUser("findUnique", async () => record);
-      mock.method(getRedis(), "set", async () => "OK" as const);
+      mock.method(getRedis(), "eval", async () => 1);
       for (let i = 0; i < rateLimiters.loginFailures.points + 1; i++) {
         assert.equal(
           (
@@ -445,7 +498,7 @@ test("auth HTTP contracts", async (t) => {
         ...publicUser,
         passwordHash: savedHash,
       }));
-      mock.method(getRedis(), "set", async () => "OK" as const);
+      mock.method(getRedis(), "eval", async () => 1);
       for (const password of [
         "Aa1!" + "x".repeat(68),
         "Aa1!" + "\u00e9".repeat(34),
