@@ -6,6 +6,7 @@ import { useCartStore } from "@/features/cart/store/cartStore";
 import { getErrorMessage } from "@/lib/error";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, PackageSearch } from "lucide-react";
+import PageMeta from "@/components/PageMeta";
 
 const CatalogError = ({
   error,
@@ -98,6 +99,10 @@ export default function ShopPage() {
 
   return (
     <div className="space-y-6">
+      <PageMeta
+        title="Products Catalog"
+        description="Browse our curated catalog of products with real-time inventory tracking, instant checkout, and event-driven fulfillment."
+      />
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
           Catalog

@@ -2,6 +2,7 @@ import { Link, Navigate } from "react-router-dom";
 import { ShoppingBag } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import LoginForm from "@/features/auth/components/LoginForm";
+import PageMeta from "@/components/PageMeta";
 
 export default function LoginPage() {
   const { accessToken, user } = useAuthStore();
@@ -12,6 +13,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh w-full flex flex-col items-center justify-center bg-muted/30 px-4 py-8 sm:py-12">
+      <PageMeta
+        title="Sign In"
+        description="Sign in to your KafkaShop account to access fast order checkout, saved carts, and real-time delivery tracking."
+      />
       <div className="w-full max-w-md flex flex-col items-center my-auto">
         <Link
           to="/"

@@ -2,10 +2,16 @@ import { ArrowLeft, PackageSearch, RefreshCw, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import PageMeta from "@/components/PageMeta";
 
 export default function RouteErrorPage() {
   return (
     <main className="flex min-h-svh items-center justify-center bg-background p-4 sm:p-6">
+      <PageMeta
+        title="Page Unavailable (404)"
+        description="The page you are looking for does not exist or has encountered an error."
+        noIndex={true}
+      />
       <Card className="w-full max-w-2xl gap-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-0 shadow-sm">
         <div className="flex items-center gap-2.5 border-b border-border/40 bg-muted/20 p-3.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs">

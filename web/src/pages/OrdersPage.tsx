@@ -6,6 +6,7 @@ import { getOrders } from "@/features/orders/api/orders.api";
 import { Button } from "@/components/ui/button";
 import { PackageSearch, RefreshCw } from "lucide-react";
 import { getErrorMessage } from "@/lib/error";
+import PageMeta from "@/components/PageMeta";
 
 export default function OrdersPage() {
   const isAdmin = useAuthStore((state) => state.user?.role === "admin");
@@ -29,6 +30,14 @@ export default function OrdersPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4">
+      <PageMeta
+        title={isAdmin ? "Orders Management (Admin)" : "My Orders"}
+        description={
+          isAdmin
+            ? "Monitor live platform orders, courier dispatching, and payment settlements streamed via SSE."
+            : "Track your orders, delivery progress, and payment status in real time with live updates."
+        }
+      />
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2.5">

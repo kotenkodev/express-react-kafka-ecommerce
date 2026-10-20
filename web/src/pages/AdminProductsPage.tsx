@@ -15,6 +15,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Product } from "@/features/products/types";
 import { ProductTable } from "@/features/products/components/ProductTable";
 import { DeleteProductConfirmation } from "@/features/products/components/DeleteProductConfirmation";
+import PageMeta from "@/components/PageMeta";
 
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
@@ -95,6 +96,10 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-6">
+      <PageMeta
+        title="Product Catalog Management (Admin)"
+        description="Add, update, or remove products from the catalog, adjust inventory stock, and configure categories."
+      />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">

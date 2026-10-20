@@ -2,6 +2,7 @@ import { Link, Navigate } from "react-router-dom";
 import { ShoppingBag } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import RegisterForm from "@/features/auth/components/RegisterForm";
+import PageMeta from "@/components/PageMeta";
 
 export default function RegisterPage() {
   const { accessToken } = useAuthStore();
@@ -12,6 +13,10 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-muted/30 px-4 py-8 sm:py-12">
+      <PageMeta
+        title="Create an Account"
+        description="Create your KafkaShop account to browse products, place orders with idempotency protection, and track shipments live."
+      />
       <div className="w-full max-w-md flex flex-col items-center my-auto">
         <Link
           to="/"

@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCartStore } from "@/features/cart/store/cartStore";
 import { getProductById } from "@/features/products/api/products.api";
 import { getErrorMessage } from "@/lib/error";
+import PageMeta from "@/components/PageMeta";
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -54,8 +55,24 @@ function ProductDetails({ id }: { id: string | undefined }) {
 
   const errorMessage = error ? getErrorMessage(error) : null;
 
+  const pageTitle = product
+    ? product.name
+    : isLoading
+      ? "Loading Product..."
+      : "Product Not Found";
+
+  const pageDesc = product
+    ? `${product.description} Available in ${product.category} for $${product.price.toFixed(2)}. In stock: ${product.stock}.`
+    : "View full product specifications, real-time inventory availability, and order with instant fulfillment.";
+
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4">
+      <PageMeta
+        title={pageTitle}
+        description={pageDesc}
+        ogTitle={product ? `${product.name} | KafkaShop` : undefined}
+        ogDescription={pageDesc}
+      />
       <Button
         variant="ghost"
         size="sm"

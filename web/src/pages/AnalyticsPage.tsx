@@ -27,6 +27,7 @@ import {
   PackageSearch,
 } from "lucide-react";
 import { getErrorMessage } from "@/lib/error";
+import PageMeta from "@/components/PageMeta";
 
 interface TimeSeriesPoint {
   time: string;
@@ -128,6 +129,10 @@ export default function AnalyticsPage() {
 
   return (
     <div className="flex h-full w-full flex-col space-y-4 p-4 sm:space-y-6 sm:p-6">
+      <PageMeta
+        title="Analytics & Platform Metrics"
+        description="Real-time order statistics, sliding window revenue analytics, success rate distributions, and end-to-end Kafka latency."
+      />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2.5">

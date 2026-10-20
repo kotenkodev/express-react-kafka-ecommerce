@@ -31,6 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getErrorMessage } from "@/lib/error";
+import PageMeta from "@/components/PageMeta";
 
 export default function ProductSearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -167,6 +168,10 @@ export default function ProductSearchPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full">
+      <PageMeta
+        title={q.trim() ? `Search: "${q.trim()}"` : "Search Products"}
+        description="Filter and search through our entire product catalog by keyword, category, price range, and in-stock availability."
+      />
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
