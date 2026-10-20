@@ -177,7 +177,7 @@ export default function AnalyticsPage() {
             <span className="text-[11px] sm:text-xs font-medium text-muted-foreground">
               Total Orders
             </span>
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-amber-500/15 text-amber-500 dark:text-amber-400">
               <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </div>
           </div>
