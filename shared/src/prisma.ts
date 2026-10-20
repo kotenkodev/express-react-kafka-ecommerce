@@ -22,12 +22,3 @@ export type {
   Category,
   OrderStatus,
 } from "@prisma/client";
-
-export const healthCheck = async () => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    console.log("Database connection is healthy.");
-  } catch (error) {
-    console.error("Database connection failed:", error);
-  }
-};

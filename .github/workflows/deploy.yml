@@ -21,18 +21,18 @@ jobs:
 
       - name: Docker Compose Down
         run: |
-          docker compose down --remove-orphans
+          docker compose -f docker-compose.prod.yml down --remove-orphans
 
       - name: Docker Compose Up & Build
         run: |
-          docker compose up --build -d
+          docker compose -f docker-compose.prod.yml up --build -d
 
       - name: Verify Container Status
         run: |
-          docker compose ps
+          docker compose -f docker-compose.prod.yml ps
 
       - name: Seed Database
         run: |
           # Wait for 10 seconds for the healthcheck
           sleep 10
-          docker compose exec -T product-service npm run db:seed
+          docker compose -f docker-compose.prod.yml exec -T product-service npm run db:seed

@@ -412,26 +412,6 @@ const user = await prisma.user.findUnique({
 
 The package also exports `Prisma`, `PrismaClient`, and several generated database types.
 
-### Database Health Check
-
-The package provides a `healthCheck()` utility that executes:
-
-```sql
-SELECT 1;
-```
-
-It logs whether the database query succeeds.
-
-```typescript
-import { healthCheck } from "@ecommerce/shared";
-
-await healthCheck();
-```
-
-The current helper logs connection errors rather than rethrowing them, so callers should not treat its successful promise resolution as proof of database health.
-
----
-
 ## 📨 Kafka Infrastructure
 
 The shared package provides reusable KafkaJS client factories with standardized retry configuration.

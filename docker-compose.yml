@@ -272,6 +272,7 @@ services:
     build:
       context: .
       dockerfile: services/auth-service/Dockerfile
+      target: dev
     container_name: auth-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -310,6 +311,7 @@ services:
     build:
       context: .
       dockerfile: services/product-service/Dockerfile
+      target: dev
     container_name: product-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -343,6 +345,7 @@ services:
     build:
       context: .
       dockerfile: services/order-service/Dockerfile
+      target: dev
     container_name: order-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -384,6 +387,7 @@ services:
     build:
       context: .
       dockerfile: services/payment-service/Dockerfile
+      target: dev
     container_name: payment-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -416,6 +420,7 @@ services:
     build:
       context: .
       dockerfile: services/delivery-service/Dockerfile
+      target: dev
     container_name: delivery-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -448,6 +453,7 @@ services:
     build:
       context: .
       dockerfile: services/analytics-service/Dockerfile
+      target: dev
     container_name: analytics-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -480,6 +486,7 @@ services:
     build:
       context: .
       dockerfile: services/search-service/Dockerfile
+      target: dev
     container_name: search-service
     networks: [kafka-net]
     restart: unless-stopped
@@ -516,6 +523,7 @@ services:
     build:
       context: .
       dockerfile: services/api-gateway/Dockerfile
+      target: dev
     container_name: api-gateway
     networks: [kafka-net]
     restart: unless-stopped

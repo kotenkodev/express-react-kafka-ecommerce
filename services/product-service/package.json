@@ -6,6 +6,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "db:seed": "node ../../shared/dist/seed.js",
     "format": "prettier --write ."
   },
   "dependencies": {

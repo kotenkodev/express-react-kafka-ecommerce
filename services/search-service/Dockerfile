@@ -1,6 +1,8 @@
-FROM node:20-alpine
+# --------------------------------------------------
+# Stage 1: Base (system deps & npm dependencies)
+# --------------------------------------------------
+FROM node:20-alpine AS base
 
-# Install openssl for Prisma on Alpine
 RUN apk add --no-cache openssl
 
 WORKDIR /app
@@ -11,13 +13,51 @@ COPY services/search-service/package.json ./services/search-service/package.json
 
 RUN npm ci --workspace=@ecommerce/shared --workspace=search-service --include-workspace-root=false --ignore-scripts
 
+# --------------------------------------------------
+# Stage 2: Development (hot-reloading with tsx)
+# --------------------------------------------------
+FROM base AS dev
+
 COPY shared ./shared
 COPY services/search-service ./services/search-service
 
 RUN npm run build --workspace=@ecommerce/shared
 
 WORKDIR /app/services/search-service
-
 EXPOSE 3005
-
 CMD ["npm", "run", "dev"]
+
+# --------------------------------------------------
+# Stage 3: Builder (TypeScript compile & prune)
+# --------------------------------------------------
+FROM base AS builder
+
+COPY shared ./shared
+COPY services/search-service ./services/search-service
+
+RUN npm run build --workspace=@ecommerce/shared
+RUN npm run build --workspace=search-service
+RUN npm prune --omit=dev --workspace=@ecommerce/shared --workspace=search-service --include-workspace-root=false --ignore-scripts
+RUN npm run db:generate --workspace=@ecommerce/shared
+RUN mkdir -p services/search-service/node_modules
+
+# --------------------------------------------------
+# Stage 4: Production (minimal runtime)
+# --------------------------------------------------
+FROM node:20-alpine AS prod
+
+RUN apk add --no-cache openssl
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/shared ./shared
+COPY --from=builder /app/services/search-service/node_modules ./services/search-service/node_modules
+COPY --from=builder /app/services/search-service/package.json ./services/search-service/package.json
+COPY --from=builder /app/services/search-service/dist ./services/search-service/dist
+
+USER node
+WORKDIR /app/services/search-service
+EXPOSE 3005
+CMD ["node", "dist/index.js"]
