@@ -52,18 +52,23 @@ export class ProductService {
     const limit = Math.min(query.limit ?? 50, 100);
     const skip = (page - 1) * limit;
 
-    const [total, products] = await Promise.all([
-      prisma.product.count({ where: whereStatement }),
-      prisma.product.findMany({
-        where: whereStatement,
-        include: {
-          category: true,
-        },
-        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
-        skip,
-        take: limit,
-      }),
-    ]);
+    const [total, products] = await prisma.$transaction(
+      [
+        prisma.product.count({ where: whereStatement }),
+        prisma.product.findMany({
+          where: whereStatement,
+          include: {
+            category: true,
+          },
+          orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+          skip,
+          take: limit,
+        }),
+      ],
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead,
+      },
+    );
 
     return {
       products,
