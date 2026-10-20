@@ -2,7 +2,6 @@ import { createBrowserRouter } from "react-router-dom";
 import ProtectedRoute from "./components/guards/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import ShopPage from "./pages/ShopPage";
 import OrdersPage from "./pages/OrdersPage";
 import RoleRoute from "./components/guards/RoleRoute";
 import SearchPage from "./pages/SearchPage";
