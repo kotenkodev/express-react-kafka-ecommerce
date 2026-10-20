@@ -3,6 +3,7 @@ import { router } from "./router";
 import { useEffect } from "react";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { Toaster } from "@/components/ui/sonner";
+import QueryProvider from "./providers";
 
 export default function App() {
   const { initAuth } = useAuthStore();
@@ -11,10 +12,9 @@ export default function App() {
   }, [initAuth]);
 
   return (
-    <>
+    <QueryProvider>
       <RouterProvider router={router} />
       <Toaster />
-    </>
+    </QueryProvider>
   );
 }
-

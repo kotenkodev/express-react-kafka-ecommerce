@@ -9,8 +9,11 @@ export const authenticateToken = (
   next: NextFunction,
 ) => {
   const authHeader = req.headers["authorization"];
-  const token =
+  const bearerToken =
     authHeader && authHeader.startsWith("Bearer ") && authHeader.split(" ")[1];
+  const queryToken =
+    typeof req.query.token === "string" ? req.query.token : undefined;
+  const token = bearerToken || queryToken;
 
   if (!token) {
     return res.status(401).json({ error: "Access token required" });
@@ -31,8 +34,12 @@ export const optionalToken = (
   next: NextFunction,
 ) => {
   const authHeader = req.headers["authorization"];
-  const token =
+  const bearerToken =
     authHeader && authHeader.startsWith("Bearer ") && authHeader.split(" ")[1];
+  const queryToken =
+    typeof req.query.token === "string" ? req.query.token : undefined;
+  const token = bearerToken || queryToken;
+
   if (token) {
     jwt.verify(token, env.jwtSecret, (err, decoded) => {
       if (!err) req.user = decoded as AuthenticatedUser;
