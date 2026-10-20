@@ -553,7 +553,16 @@ docker run -p 8000:8000 \
 
 When running inside Docker, ensure service URLs are reachable from the container. Localhost addresses refer to the container itself, not automatically to the host machine.
 
-**Note:** The provided Dockerfile currently starts the Gateway using `npm run dev`, making it development-oriented. A production deployment should use a compiled build and an appropriate production startup command.
+The existing `Dockerfile` runs `npm run dev` for development. For production, use the separate multi-stage image from the repository root:
+
+```bash
+docker build -f services/api-gateway/Dockerfile.prod -t api-gateway:production .
+docker run --rm -p 8000:8000 --env-file services/api-gateway/.env api-gateway:production
+```
+
+The production image compiles the shared package and gateway using TypeScript, removes development dependencies, and runs `node dist/index.js` as the non-root `node` user with `NODE_ENV=production`. Node-compatible CommonJS output requires no bundler or custom build script.
+
+Supply the required service URLs and JWT secret through the environment file or deployment environment. Service URLs must be reachable from the container; do not bake secrets into the image.
 
 ## 📂 Project Structure
 
