@@ -1,86 +1,54 @@
+import { useEffect, useRef } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { getProducts } from "@/features/products/api/products.api";
 import ProductGrid from "@/features/products/components/ProductGrid";
-import { Product } from "@/features/products/types";
 import { useCartStore } from "@/features/cart/store/cartStore";
-import { useEffect, useRef, useState } from "react";
 import { getErrorMessage } from "@/lib/error";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, PackageSearch } from "lucide-react";
 
 export default function ShopPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { addItem } = useCartStore();
-
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [retry, setRetry] = useState(0);
-
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const limit = 12;
 
-  useEffect(() => {
-    let ignore = false;
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    error,
+    refetch,
+    isRefetching,
+  } = useInfiniteQuery({
+    queryKey: ["shop-products"],
+    queryFn: ({ pageParam = 1 }) =>
+      getProducts({ page: pageParam, limit: 12 }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.page < lastPage.pagination.totalPages
+        ? lastPage.pagination.page + 1
+        : undefined,
+  });
 
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const data = await getProducts({ page, limit });
-
-        if (ignore) return;
-
-        setProducts((previous) =>
-          page === 1 ? data.products : [...previous, ...data.products],
-        );
-
-        setHasMore(page < data.pagination.totalPages);
-      } catch (err: any) {
-        if (!ignore) {
-          const errorMsg = getErrorMessage(
-            err,
-            "Failed to load products. Please try again.",
-          );
-          setError(errorMsg);
-          toast.error(errorMsg);
-        }
-      } finally {
-        if (!ignore) setIsLoading(false);
-      }
-    };
-
-    void fetchProducts();
-
-    return () => {
-      ignore = true;
-    };
-  }, [page, retry]);
+  const products = data ? data.pages.flatMap((page) => page.products) : [];
 
   useEffect(() => {
     const element = loadMoreRef.current;
-
-    if (!element || isLoading || !hasMore || error) return;
-
-    let triggered = false;
+    if (!element || !hasNextPage || isFetchingNextPage) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting || triggered) return;
-
-        triggered = true;
-        observer.disconnect();
-
-        setIsLoading(true);
-        setPage((previous) => previous + 1);
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
       },
       { rootMargin: "200px" },
     );
 
     observer.observe(element);
-
     return () => observer.disconnect();
-  }, [isLoading, hasMore, error]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className="space-y-6">
@@ -93,41 +61,53 @@ export default function ShopPage() {
         </p>
       </div>
 
-      <ProductGrid
-        products={products}
-        isLoading={isLoading && products.length === 0}
-        onAddToCart={addItem}
-      />
-
-      <div ref={loadMoreRef} className="h-1" aria-hidden="true" />
-
-      {isLoading && products.length > 0 && (
-        <p role="status" className="text-center text-muted-foreground">
-          Loading more products...
-        </p>
-      )}
-
-      {error && (
-        <div className="text-center">
-          <p role="alert">{error}</p>
-          <button
-            type="button"
-            className="mt-2 underline"
-            onClick={() => {
-              setIsLoading(true);
-              setError(null);
-              setRetry((previous) => previous + 1);
-            }}
+      {error && products.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
+          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+            <PackageSearch className="h-5 w-5" />
+          </div>
+          <h2 className="text-sm font-semibold text-foreground">
+            Failed to load catalog
+          </h2>
+          <p className="mt-1 max-w-sm text-xs text-muted-foreground">
+            {getErrorMessage(error)}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 text-xs"
+            onClick={() => refetch()}
+            disabled={isRefetching}
           >
+            <RefreshCw
+              className={`h-3 w-3 mr-1.5 ${isRefetching ? "animate-spin" : ""}`}
+            />
             Try again
-          </button>
+          </Button>
         </div>
-      )}
+      ) : (
+        <>
+          <ProductGrid
+            products={products}
+            isLoading={isLoading && products.length === 0}
+            onAddToCart={addItem}
+          />
 
-      {!hasMore && products.length > 0 && (
-        <p className="text-center text-muted-foreground">
-          You’ve reached the end.
-        </p>
+          <div ref={loadMoreRef} className="h-4" aria-hidden="true" />
+
+          {isFetchingNextPage && (
+            <div className="flex justify-center items-center py-4 text-xs text-muted-foreground">
+              <RefreshCw className="h-3.5 w-3.5 animate-spin mr-2 text-primary" />
+              Loading more products...
+            </div>
+          )}
+
+          {!hasNextPage && products.length > 0 && (
+            <p className="text-center text-xs text-muted-foreground pt-2">
+              You've reached the end of the catalog.
+            </p>
+          )}
+        </>
       )}
     </div>
   );

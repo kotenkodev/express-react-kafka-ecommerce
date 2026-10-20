@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import AdminProductForm from "@/features/products/components/AdminProductForm";
 import {
   createProduct,
   deleteProduct,
@@ -7,42 +9,47 @@ import {
   getProducts,
   updateProduct,
 } from "@/features/products/api/products.api";
-import { ProductTable } from "@/features/products/components/ProductTable";
-import { Category, Product } from "@/features/products/types";
-import { useEffect, useState } from "react";
-import AdminProductForm from "@/features/products/components/AdminProductForm";
 import { toast } from "sonner";
-import { DeleteProductConfirmation } from "@/features/products/components/DeleteProductConfirmation";
 import { getErrorMessage } from "@/lib/error";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Product } from "@/features/products/types";
+import { ProductTable } from "@/features/products/components/ProductTable";
+import { DeleteProductConfirmation } from "@/features/products/components/DeleteProductConfirmation";
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
+
   const [isFormOpen, setIsDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const [productsRes, categoriesRes] = await Promise.all([
-          getProducts(),
-          getCategories(),
-        ]);
-        setProducts(productsRes.products);
-        setCategories(categoriesRes);
-      } catch (error) {
-        console.error("Failed to load page data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadData();
-  }, []);
+  const { data: productsData, isLoading: isProductsLoading } = useQuery({
+    queryKey: ["admin-products"],
+    queryFn: () => getProducts(),
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const products = productsData?.products || [];
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteProduct(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      setIsConfirmationOpen(false);
+      setProductToDelete(null);
+      toast.success("Product deleted successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to delete product. Please try again.");
+    },
+  });
 
   function handleDelete(product: Product) {
     setProductToDelete(product);
@@ -50,25 +57,8 @@ export default function AdminProductsPage() {
   }
 
   async function handleConfirmDelete() {
-    if (!productToDelete || isDeleting) return;
-
-    setIsDeleting(true);
-
-    try {
-      await deleteProduct(productToDelete.id);
-
-      setProducts((previous) =>
-        previous.filter((product) => product.id !== productToDelete.id),
-      );
-
-      setIsConfirmationOpen(false);
-      setProductToDelete(null);
-      toast.success("Product deleted successfully!");
-    } catch {
-      toast.error("Failed to delete product. Please try again.");
-    } finally {
-      setIsDeleting(false);
-    }
+    if (!productToDelete || deleteMutation.isPending) return;
+    deleteMutation.mutate(productToDelete.id);
   }
 
   const handleOpenCreate = () => {
@@ -88,10 +78,13 @@ export default function AdminProductsPage() {
       } else {
         await createProduct(values);
       }
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      setIsDialogOpen(false);
       toast.success(
         `Product ${selectedProduct ? "updated" : "created"} successfully!`,
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMsg = getErrorMessage(
         err,
         "Failed to perform product action. Please try again.",
@@ -123,22 +116,23 @@ export default function AdminProductsPage() {
 
       <ProductTable
         products={products}
-        isLoading={isLoading}
+        isLoading={isProductsLoading}
         onEdit={handleOpenEdit}
         onDelete={handleDelete}
       />
+
       <DeleteProductConfirmation
         open={isConfirmationOpen}
         productName={productToDelete?.name ?? ""}
-        isDeleting={isDeleting}
+        isDeleting={deleteMutation.isPending}
         onConfirm={handleConfirmDelete}
         onOpenChange={(open) => {
-          if (isDeleting) return;
-
+          if (deleteMutation.isPending) return;
           setIsConfirmationOpen(open);
           if (!open) setProductToDelete(null);
         }}
       />
+
       <AdminProductForm
         categories={categories}
         open={isFormOpen}

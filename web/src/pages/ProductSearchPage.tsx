@@ -18,22 +18,16 @@ import {
 import { Pagination } from "@/components/Pagination";
 import ProductGrid from "@/features/products/components/ProductGrid";
 import { ProductQueryInput } from "@/features/products/schemas/product-query.schema";
-import { Category, Product } from "@/features/products/types";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, RefreshCw, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getErrorMessage } from "@/lib/error";
-import { toast } from "sonner";
 
 export default function ProductSearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { addItem } = useCartStore();
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalProducts, setTotalProducts] = useState(0);
 
   const q = searchParams.get("q") || "";
   const category = searchParams.get("category") || "all";
@@ -75,7 +69,48 @@ export default function ProductSearchPage() {
   );
   const [debouncedMinPrice, debouncedMaxPrice] = debouncedPriceRange.split(":");
 
-  const foundProducts = products.length > 0 ? products.length : 0;
+  // TanStack Query for categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // TanStack Query for products list
+  const {
+    data: productsData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: [
+      "products",
+      debouncedQ,
+      category,
+      debouncedMinPrice,
+      debouncedMaxPrice,
+      inStock,
+      page,
+      limit,
+    ],
+    queryFn: () =>
+      getProducts({
+        q: debouncedQ,
+        category: category !== "all" ? category : undefined,
+        minPrice: debouncedMinPrice ? Number(debouncedMinPrice) : undefined,
+        maxPrice: debouncedMaxPrice ? Number(debouncedMaxPrice) : undefined,
+        inStock: inStock || undefined,
+        page,
+        limit,
+      } as ProductQueryInput),
+    placeholderData: keepPreviousData,
+  });
+
+  const products = productsData?.products || [];
+  const totalPages = productsData?.pagination?.totalPages || 1;
+  const totalProducts = productsData?.pagination?.total || 0;
+  const foundProducts = products.length;
 
   const updateFilter = (key: string, value: string | boolean | null) => {
     setSearchParams((prev) => {
@@ -98,6 +133,7 @@ export default function ProductSearchPage() {
       next.set("page", String(nextPage));
       return next;
     });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePriceChange = (value: number | readonly number[]) => {
@@ -116,57 +152,16 @@ export default function ProductSearchPage() {
     );
   };
 
-  useEffect(() => {
-    let ignore = false;
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const [productsRes, categoriesRes] = await Promise.all([
-          getProducts({
-            q: debouncedQ,
-            category: category !== "all" ? category : undefined,
-            minPrice: debouncedMinPrice ? Number(debouncedMinPrice) : undefined,
-            maxPrice: debouncedMaxPrice ? Number(debouncedMaxPrice) : undefined,
-            inStock: inStock || undefined,
-            page: page,
-            limit: limit,
-          } as ProductQueryInput),
-          getCategories(),
-        ]);
-        if (ignore) return;
-        setProducts(productsRes.products);
-        setTotalPages(productsRes.pagination.totalPages);
-        setTotalProducts(productsRes.pagination.total);
-        setCategories(categoriesRes);
-      } catch (err: any) {
-        const errorMsg = getErrorMessage(
-          err,
-          "Failed to load products. Please try again.",
-        );
-        toast.error(errorMsg);
-      } finally {
-        if (!ignore) setIsLoading(false);
-      }
-    };
-    loadData();
-    return () => {
-      ignore = true;
-    };
-  }, [
-    debouncedQ,
-    category,
-    debouncedMinPrice,
-    debouncedMaxPrice,
-    inStock,
-    page,
-    limit,
-  ]);
-
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8 max-w-7xl mx-auto w-full">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Product Search</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">Product Search</h1>
+            {isFetching && (
+              <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+            )}
+          </div>
           <p className="text-muted-foreground">
             Showing {foundProducts} of {totalProducts} products
           </p>
@@ -184,115 +179,108 @@ export default function ProductSearchPage() {
         </div>
       </header>
 
-      <section className="bg-muted/40 border rounded-lg p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 items-end">
-          <div className="space-y-2">
-            <Label
-              htmlFor="category"
-              className="text-xs font-semibold uppercase text-muted-foreground"
-            >
-              Category
-            </Label>
-            <Select
-              value={category}
-              onValueChange={(val) => updateFilter("category", val)}
-            >
-              <SelectTrigger className="bg-background">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((item) => (
-                    <SelectItem key={item.id} value={item.name}>
-                      {item.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-3 sm:col-span-2">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span
-                id="price-range-label"
-                className="text-xs font-semibold uppercase text-muted-foreground"
-              >
-                Price range
-              </span>
-              <span className="text-xs font-medium tabular-nums">
-                ${minimumPrice.toFixed(2)} –{" "}
-                {Number.isFinite(maximumPrice)
-                  ? `$${maximumPrice.toFixed(2)}`
-                  : "Any price"}
-              </span>
-            </div>
-            <div className="rounded-lg border border-border/60 bg-background px-3 py-3">
-              <Slider
-                aria-labelledby="price-range-label"
-                thumbLabels={["Minimum price", "Maximum price"]}
-                min={0}
-                max={priceCeiling}
-                step={1}
-                value={priceRange}
-                thumbCollisionBehavior="none"
-                onValueChange={handlePriceChange}
-                className="py-2"
-              />
-              <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
-                <span>$0</span>
-                <span>${priceCeiling.toLocaleString()}+</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center h-10 px-2 lg:col-span-2">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="inStock"
-                checked={inStock}
-                onCheckedChange={(checked) =>
-                  updateFilter("inStock", checked === true)
-                }
-              />
-              <Label
-                htmlFor="inStock"
-                className="cursor-pointer text-sm font-medium"
-              >
-                Only show in-stock items
-              </Label>
-            </div>
-          </div>
+      {error ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
+          <AlertCircle className="h-8 w-8 text-destructive mb-2" />
+          <h2 className="text-base font-semibold">Failed to load products</h2>
+          <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+            {getErrorMessage(error)}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4 text-xs"
+            onClick={() => refetch()}
+          >
+            Try again
+          </Button>
         </div>
-      </section>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <aside className="md:col-span-1 space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg">Filters</h3>
 
-      <main className="min-h-100">
-        <ProductGrid
-          isLoading={isLoading}
-          onAddToCart={addItem}
-          products={products}
-        />
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Select
+                  value={category}
+                  onValueChange={(val) => updateFilter("category", val)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map((c) => (
+                        <SelectItem key={c.id} value={c.name}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
 
-        {!isLoading && products.length === 0 && (
-          <div className="text-center py-24 text-muted-foreground">
-            <Search className="mx-auto h-12 w-12 opacity-20 mb-4" />
-            <p className="text-lg font-medium">No products found</p>
-            <p className="text-sm">
-              Try adjusting your filters or search term.
-            </p>
-          </div>
-        )}
-      </main>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <Label>Price Range</Label>
+                  <span className="text-sm text-muted-foreground">
+                    ${priceRange[0]} - ${priceRange[1]}
+                  </span>
+                </div>
+                <Slider
+                  min={0}
+                  max={priceCeiling}
+                  step={10}
+                  value={priceRange}
+                  onValueChange={handlePriceChange}
+                />
+              </div>
 
-      {totalPages > 1 && (
-        <footer className="pt-6 border-t mt-auto">
-          <Pagination
-            totalPages={totalPages}
-            currentPage={page}
-            onPageChange={handlePageChange}
-          />
-        </footer>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="inStock"
+                  checked={inStock}
+                  onCheckedChange={(checked) => updateFilter("inStock", checked)}
+                />
+                <Label htmlFor="inStock" className="cursor-pointer">
+                  In Stock Only
+                </Label>
+              </div>
+
+              {(q ||
+                category !== "all" ||
+                minPrice ||
+                maxPrice ||
+                inStock ||
+                page > 1) && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setSearchParams(new URLSearchParams())}
+                >
+                  Reset Filters
+                </Button>
+              )}
+            </div>
+          </aside>
+
+          <main className="md:col-span-3 space-y-6">
+            <ProductGrid
+              products={products}
+              isLoading={isLoading}
+              onAddToCart={addItem}
+            />
+
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </main>
+        </div>
       )}
     </div>
   );

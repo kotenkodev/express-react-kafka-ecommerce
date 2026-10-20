@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getAnalytics, getStats } from "@/features/analytics/api/analytics.api";
-import type { AnalyticsStats, AllTimeStats } from "@/features/analytics/types";
 import {
   ResponsiveContainer,
   LineChart,
@@ -24,7 +24,9 @@ import {
   Clock,
   RefreshCw,
   Radio,
+  PackageSearch,
 } from "lucide-react";
+import { getErrorMessage } from "@/lib/error";
 
 interface TimeSeriesPoint {
   time: string;
@@ -32,70 +34,90 @@ interface TimeSeriesPoint {
 }
 
 export default function AnalyticsPage() {
-  const [stats, setStats] = useState<AllTimeStats | null>(null);
-  const [analytics, setAnalytics] = useState<AnalyticsStats | null>(null);
   const [history, setHistory] = useState<TimeSeriesPoint[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const historyRef = useRef<TimeSeriesPoint[]>([]);
 
-  const fetchMetrics = async (isInitial = false) => {
-    if (isInitial) setIsLoading(true);
-    else setIsRefreshing(true);
+  const {
+    data: stats,
+    isLoading: isStatsLoading,
+    error: statsError,
+    refetch: refetchStats,
+  } = useQuery({
+    queryKey: ["analytics-stats"],
+    queryFn: getStats,
+  });
 
-    try {
-      const [statsRes, analyticsRes] = await Promise.all([
-        getStats(),
-        getAnalytics(),
-      ]);
+  const {
+    data: analytics,
+    isLoading: isAnalyticsLoading,
+    error: analyticsError,
+    refetch: refetchAnalytics,
+    isRefetching,
+  } = useQuery({
+    queryKey: ["analytics-window"],
+    queryFn: getAnalytics,
+    refetchInterval: 5000,
+  });
 
-      setStats(statsRes);
-      setAnalytics(analyticsRes);
-
-      const now = new Date();
-      const timeLabel = now.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      });
-
-      const nextPoint: TimeSeriesPoint = {
-        time: timeLabel,
-        ordersCount: analyticsRes.ordersCount ?? 0,
-      };
-
-      const updatedHistory = [...historyRef.current, nextPoint].slice(-12);
-      historyRef.current = updatedHistory;
-      setHistory(updatedHistory);
-    } catch (error) {
-      console.error("Failed to load analytics data:", error);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
-
+  // Append new sliding window point to time-series history
   useEffect(() => {
-    void fetchMetrics(true);
+    if (!analytics) return;
 
-    const interval = setInterval(() => {
-      void fetchMetrics(false);
-    }, 5000);
+    const now = new Date();
+    const timeLabel = now.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
 
-    return () => clearInterval(interval);
-  }, []);
+    setHistory((prev) =>
+      [
+        ...prev,
+        { time: timeLabel, ordersCount: analytics.ordersCount ?? 0 },
+      ].slice(-12),
+    );
+  }, [analytics]);
 
-  if (isLoading || !stats || !analytics) {
+  const isLoading = isStatsLoading || isAnalyticsLoading;
+  const error = statsError || analyticsError;
+
+  if (isLoading && (!stats || !analytics)) {
     return (
       <div className="flex h-48 items-center justify-center text-xs text-muted-foreground">
-        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+        <RefreshCw className="mr-2 h-4 w-4 animate-spin text-primary" />
         Loading analytics...
       </div>
     );
   }
 
-  const rawSuccess = analytics.successRate ?? 0;
+  if (error && !stats && !analytics) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
+        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+          <PackageSearch className="h-5 w-5" />
+        </div>
+        <h2 className="text-sm font-semibold text-foreground">
+          Analytics unavailable
+        </h2>
+        <p className="mt-1 max-w-sm text-xs text-muted-foreground">
+          {getErrorMessage(error)}
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-3 text-xs"
+          onClick={() => {
+            void refetchStats();
+            void refetchAnalytics();
+          }}
+        >
+          Try again
+        </Button>
+      </div>
+    );
+  }
+
+  const rawSuccess = analytics?.successRate ?? 0;
   const successPct =
     rawSuccess <= 1 ? Math.round(rawSuccess * 100) : Math.round(rawSuccess);
   const failedPct = Math.max(0, 100 - successPct);
@@ -131,11 +153,14 @@ export default function AnalyticsPage() {
           variant="outline"
           size="sm"
           className="gap-1.5 self-start sm:self-auto text-xs h-8"
-          onClick={() => void fetchMetrics(false)}
-          disabled={isRefreshing}
+          onClick={() => {
+            void refetchStats();
+            void refetchAnalytics();
+          }}
+          disabled={isRefetching}
         >
           <RefreshCw
-            className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`}
+            className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`}
             aria-hidden="true"
           />
           Refresh
@@ -153,7 +178,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
           <div className="mt-1 text-xl font-bold text-foreground">
-            {stats.totalOrders}
+            {stats?.totalOrders ?? "—"}
           </div>
           <p className="text-[10px] text-muted-foreground">
             All indexed orders
@@ -170,7 +195,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
           <div className="mt-1 text-xl font-bold text-foreground">
-            ${Number(stats.totalRevenue).toFixed(2)}
+            ${Number(stats?.totalRevenue ?? 0).toFixed(2)}
           </div>
           <p className="text-[10px] text-muted-foreground">
             Platform lifetime revenue
@@ -187,7 +212,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
           <div className="mt-1 text-xl font-bold text-foreground">
-            ${Number(stats.avgOrderAmount).toFixed(2)}
+            ${Number(stats?.avgOrderAmount ?? 0).toFixed(2)}
           </div>
           <p className="text-[10px] text-muted-foreground">
             Average order value
@@ -204,7 +229,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
           <div className="mt-1 text-xl font-bold text-foreground">
-            {analytics.avgProcessingMs} ms
+            {analytics?.avgProcessingMs ?? 0} ms
           </div>
           <p className="text-[10px] text-muted-foreground">
             Avg processing latency

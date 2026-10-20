@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCartStore } from "@/features/cart/store/cartStore";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useOrdersStore } from "../store/ordersStore";
 import { createOrder } from "../api/orders.api";
+import type { Order } from "../types";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +28,7 @@ import { getErrorMessage } from "@/lib/error";
 
 export default function OrderForm() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const { items, total, clear, isCheckoutOpen, setCheckoutOpen, setIsOpen } =
     useCartStore();
@@ -59,6 +62,18 @@ export default function OrderForm() {
 
       const newOrder = await createOrder(payload);
 
+      // 1. Immediately inject the new order into the TanStack Query cache
+      queryClient.setQueryData<Order[]>(["orders"], (oldOrders = []) => {
+        return [newOrder, ...oldOrders.filter((o) => o.id !== newOrder.id)];
+      });
+
+      // 2. Invalidate queries so data stays strictly synchronized with the database
+      void queryClient.invalidateQueries({ queryKey: ["orders"] });
+      void queryClient.invalidateQueries({ queryKey: ["shop-products"] });
+      void queryClient.invalidateQueries({ queryKey: ["products"] });
+      void queryClient.invalidateQueries({ queryKey: ["search-orders"] });
+
+      // 3. Update Zustand stores and UI state
       addOrder(newOrder);
       clear();
       setCheckoutOpen(false);

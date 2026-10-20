@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useDebounce } from "@/hooks/useDebounce";
 import { searchOrders } from "@/features/search/api/search.api";
-import type { SearchOrderDocument } from "@/features/search/types";
 import SearchOrderCard from "@/features/search/components/SearchOrderCard";
 import { Pagination } from "@/components/Pagination";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, X, PackageSearch, Filter } from "lucide-react";
+import { Search, X, PackageSearch, Filter, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getErrorMessage } from "@/lib/error";
 
 const ORDER_STATUS_OPTIONS = [
   { value: "ALL", label: "All statuses" },
@@ -42,12 +43,6 @@ export default function SearchPage() {
   const [statusFilter, setStatusFilter] = useState(urlStatus);
   const [currentPage, setCurrentPage] = useState(urlPage);
 
-  const [orders, setOrders] = useState<SearchOrderDocument[]>([]);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const updateUrlParams = useCallback(
     (q: string, status: string, page: number) => {
       const params = new URLSearchParams();
@@ -64,43 +59,22 @@ export default function SearchPage() {
     updateUrlParams(debouncedQuery, statusFilter, 1);
   }, [debouncedQuery, statusFilter, updateUrlParams]);
 
-  useEffect(() => {
-    let ignore = false;
-    const executeSearch = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const result = await searchOrders({
-          q: debouncedQuery,
-          status: statusFilter,
-          page: currentPage,
-          limit: 10,
-        });
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
+    queryKey: ["search-orders", debouncedQuery, statusFilter, currentPage],
+    queryFn: () =>
+      searchOrders({
+        q: debouncedQuery,
+        status: statusFilter,
+        page: currentPage,
+        limit: 10,
+      }),
+    placeholderData: keepPreviousData,
+  });
 
-        if (!ignore) {
-          setOrders(result.orders || []);
-          setTotal(result.total || 0);
-          setTotalPages(result.totalPages || 1);
-        }
-      } catch (err) {
-        if (!ignore) {
-          setError(
-            err instanceof Error ? err.message : "Failed to search orders",
-          );
-        }
-      } finally {
-        if (!ignore) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void executeSearch();
-
-    return () => {
-      ignore = true;
-    };
-  }, [debouncedQuery, statusFilter, currentPage]);
+  const orders = data?.orders || [];
+  const total = data?.total || 0;
+  const totalPages = data?.totalPages || 1;
+  const errorMessage = error ? getErrorMessage(error) : null;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -171,7 +145,12 @@ export default function SearchPage() {
       </div>
 
       <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
-        <span>{isLoading ? "Searching..." : `Found: ${total} orders`}</span>
+        <span className="flex items-center gap-1.5">
+          {isFetching && (
+            <RefreshCw className="h-3 w-3 animate-spin text-primary" />
+          )}
+          {isLoading ? "Searching..." : `Found: ${total} orders`}
+        </span>
         {statusFilter !== "ALL" && (
           <span className="font-medium text-foreground">
             Filter: {statusFilter}
@@ -198,7 +177,7 @@ export default function SearchPage() {
             </div>
           ))}
         </div>
-      ) : error ? (
+      ) : errorMessage ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
           <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
             <PackageSearch className="h-5 w-5" />
@@ -206,12 +185,14 @@ export default function SearchPage() {
           <h2 className="text-sm font-semibold text-foreground">
             Search Error
           </h2>
-          <p className="mt-1 max-w-sm text-xs text-muted-foreground">{error}</p>
+          <p className="mt-1 max-w-sm text-xs text-muted-foreground">
+            {errorMessage}
+          </p>
           <Button
             variant="outline"
             size="sm"
             className="mt-3 text-xs"
-            onClick={() => setCurrentPage(1)}
+            onClick={() => refetch()}
           >
             Try again
           </Button>

@@ -1,11 +1,14 @@
 import { useEffect, useRef } from "react";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useOrdersStore, OrderStatusUpdatePayload } from "../store/ordersStore";
+import { useQueryClient } from "@tanstack/react-query";
+import type { Order } from "../types";
 import { toast } from "sonner";
 
 export function useOrderSSE() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const updateOrderStatus = useOrdersStore((state) => state.updateOrderStatus);
+  const queryClient = useQueryClient();
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
@@ -28,14 +31,34 @@ export function useOrderSSE() {
         const data = JSON.parse(event.data) as OrderStatusUpdatePayload;
         if (!data) return;
 
+        const targetId = data.orderId || data.id;
+
+        // Update local Zustand store
         updateOrderStatus(data);
 
-        const shortId = (data.orderId || data.id || "").slice(0, 8);
+        // Update TanStack Query cache directly
+        queryClient.setQueryData<Order[]>(["orders"], (oldOrders) => {
+          if (!oldOrders) return oldOrders;
+          return oldOrders.map((o) =>
+            o.id === targetId
+              ? {
+                  ...o,
+                  status: data.status ?? o.status,
+                  courier:
+                    data.courier !== undefined ? data.courier : o.courier,
+                  paymentStatus: data.paymentStatus ?? o.paymentStatus,
+                  updatedAt: data.updatedAt ?? new Date().toISOString(),
+                }
+              : o,
+          );
+        });
+
+        const shortId = (targetId || "").slice(0, 8);
         if (data.status) {
           toast.info(
             `Order #${shortId || "update"}: status is now ${data.status}`,
             {
-              id: `order-status-${data.orderId || data.id}-${data.status}`,
+              id: `order-status-${targetId}-${data.status}`,
             },
           );
         }
@@ -58,5 +81,5 @@ export function useOrderSSE() {
       eventSource.close();
       eventSourceRef.current = null;
     };
-  }, [accessToken, updateOrderStatus]);
+  }, [accessToken, updateOrderStatus, queryClient]);
 }
