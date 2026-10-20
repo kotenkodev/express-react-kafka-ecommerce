@@ -1,0 +1,25 @@
+FROM node:20-alpine AS build
+RUN apk add --no-cache openssl
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY shared/package.json ./shared/package.json
+COPY services/analytics-service/package.json ./services/analytics-service/package.json
+RUN npm ci --workspace=@ecommerce/shared --workspace=analytics-service --include-workspace-root=false --ignore-scripts
+COPY shared ./shared
+COPY services/analytics-service ./services/analytics-service
+RUN npm run build --workspace=@ecommerce/shared
+RUN npm run build --workspace=analytics-service
+RUN npm prune --omit=dev --workspace=@ecommerce/shared --workspace=analytics-service --include-workspace-root=false --ignore-scripts
+
+FROM node:20-alpine AS runtime
+RUN apk add --no-cache openssl
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/shared ./shared
+COPY --from=build /app/services/analytics-service/package.json ./services/analytics-service/package.json
+COPY --from=build /app/services/analytics-service/dist ./services/analytics-service/dist
+USER node
+WORKDIR /app/services/analytics-service
+EXPOSE 3004
+CMD ["node", "dist/index.js"]

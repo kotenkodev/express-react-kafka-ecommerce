@@ -81,7 +81,7 @@ The service calculates the following metrics over a rolling 60-second window.
 | Metric            | Description                                              |
 | ----------------- | -------------------------------------------------------- |
 | `ordersCount`     | Number of orders recorded within the sliding window      |
-| `totalRevenue`    | Aggregated revenue reported for the window               |
+| `totalRevenue`    | Paid order value for successful payments in the window               |
 | `successRate`     | Proportion of successful payment outcomes                |
 | `avgProcessingMs` | Average order-to-payment processing time in milliseconds |
 | `windowStart`     | Beginning of the current aggregation window              |
@@ -238,32 +238,41 @@ http://localhost:3004
 
 ### Production
 
-Compile the TypeScript source:
+From the repository root, generate shared types and compile the service with TypeScript:
 
 ```bash
-npm run build
+npm run build --workspace=@ecommerce/shared
+npm run build --workspace=analytics-service
 ```
 
 Start the compiled application:
 
 ```bash
-npm run start
+npm run start --workspace=analytics-service
 ```
 
 ### Docker
 
-Build the Docker image:
+Build the development image from the repository root (watch mode):
 
 ```bash
-docker build -t analytics-service .
+docker build -f services/analytics-service/Dockerfile -t analytics-service .
 ```
 
-Run the container:
+Build the separate production image from the repository root:
+
+```bash
+docker build -f services/analytics-service/Dockerfile.prod -t analytics-service:production .
+```
+
+The production image runs the compiled JavaScript as the non-root `node` user, with development dependencies removed. Analytics and the shared package compile to CommonJS using Node-compatible TypeScript settings; no custom build script or bundler is required.
+
+Run the production container:
 
 ```bash
 docker run -p 3004:3004 \
   -e KAFKA_BROKERS=host.docker.internal:9092 \
-  analytics-service
+  analytics-service:production
 ```
 
 Ensure Kafka is running and accessible from the container. The `host.docker.internal` hostname is intended for environments where Docker supports host connectivity through that name.
@@ -326,3 +335,21 @@ The service depends on an available Kafka broker and the internal shared workspa
 ---
 
 **Analytics Service** — Real-time business insights powered by Kafka, TypeScript, and Prometheus.
+
+## Event correctness and retention
+
+- Events are validated at runtime. Invalid JSON, invalid or future timestamps, negative/non-numeric amounts, and invalid statuses are rejected, logged with Kafka coordinates, and counted by `kafkaConsumerErrors`. These poison messages are intentionally skipped; no dead-letter queue is configured.
+- Unexpected processing errors propagate to KafkaJS instead of resolving the message successfully. Monitor consumer failures and restart/retry behavior operationally.
+- Orders and payments correlate in either arrival order. Latency is observed once per payment, including when its order arrives later.
+- `totalRevenue` counts each successfully paid order once, using payments processed within the last 60 seconds. Failed and unpaid orders contribute zero. Payments awaiting their order contribute revenue once that order arrives.
+- `ordersCount` uses order creation time; payment rates, revenue, and latency use payment processing time. These windows can contain different populations.
+- `CORRELATION_RETENTION_MS` defaults to 86400000 (24 hours), with a minimum of 60000. Order amounts/timestamps and payment identifiers remain in memory for that retention period; correlations beyond it are unavailable. Size this period for expected payment delays and traffic.
+- Cleanup runs every five seconds independently of publication, and during ingestion and reads. Publication never overlaps and shutdown waits for an active send.
+- Orders deduplicate by `orderId`, payments by `paymentId`. Historical payments outside the stats window are ignored, including for business counters. Historical orders within correlation retention may still supply amounts and timestamps.
+- State and deduplication are process-local, not durable across restarts or shared between replicas. Committed offsets do not rebuild the in-memory window after restart. Offset resets can rebuild recent statistics, but this service does not promise durable exactly-once counters or cluster-wide aggregation.
+
+After building the shared package, run regression tests from the repository root:
+
+```bash
+npm test --workspace=analytics-service
+```

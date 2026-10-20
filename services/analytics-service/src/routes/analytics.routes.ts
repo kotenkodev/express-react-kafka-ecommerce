@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { slidingWindowService } from "../services/slidingWindow";
+import { slidingWindowService } from "../services/analyticsWindow";
 import { requireRole } from "@ecommerce/shared";
 
 const router = Router();

@@ -10,7 +10,8 @@ import {
   metricsHandler,
 } from "@ecommerce/shared";
 import { publishOrderStats, statsProducer } from "./producers/stats.producer";
-import { slidingWindowService } from "./services/slidingWindow";
+import { slidingWindowService } from "./services/analyticsWindow";
+import { startStatsPublisher } from "./services/statsPublisher";
 import {
   analyticsConsumer,
   startAnalyticsConsumer,
@@ -36,17 +37,16 @@ app.get("/health", (_req: Request, res: Response) => {
 
 app.use(errorHandler);
 
-let statsInterval: NodeJS.Timeout | null = null;
+let stopPublishing: (() => Promise<void>) | undefined;
 
 let shuttingDown = false;
 async function shutdown(signal: string) {
   if (shuttingDown) return;
   shuttingDown = true;
   console.log(`[Analytics] Received ${signal}. Shutting down...`);
-  if (statsInterval) {
-    clearInterval(statsInterval);
-  }
+  slidingWindowService.stopCleanup();
   try {
+    await stopPublishing?.();
     await new Promise<void>((resolve) => server.close(() => resolve()));
     await analyticsConsumer.disconnect();
     await statsProducer.disconnect();
@@ -64,19 +64,16 @@ process.once("SIGTERM", () => void shutdown("SIGTERM"));
 
 async function start() {
   try {
+    slidingWindowService.startCleanup();
     await statsProducer.connect();
     console.log("[Analytics] Kafka stats producer connected");
     await startAnalyticsConsumer();
     console.log("[Analytics] Kafka consumer started");
 
-    statsInterval = setInterval(async () => {
-      try {
-        const stats = slidingWindowService.getStats();
-        await publishOrderStats(stats);
-      } catch (err) {
-        console.error("[Analytics] Error publishing stats:", err);
-      }
-    }, 5000);
+    stopPublishing = startStatsPublisher(
+      () => publishOrderStats(slidingWindowService.getStats()),
+      err => console.error("[Analytics] Error publishing stats:", err),
+    );
     server.listen(PORT, () => {
       console.log(`Analytics service running on port ${PORT}`);
     });

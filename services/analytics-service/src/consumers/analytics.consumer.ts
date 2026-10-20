@@ -5,11 +5,10 @@ import {
   kafkaConsumerErrors,
   paymentSuccessTotal,
   paymentFailureTotal,
-  orderProcessingDuration,
 } from "@ecommerce/shared";
-import type { Order, OrderCreated, PaymentProcessed } from "@ecommerce/shared";
+import { orderSchema, paymentSchema } from "./eventValidation";
 import { env } from "../config/env";
-import { slidingWindowService } from "../services/slidingWindow";
+import { slidingWindowService } from "../services/analyticsWindow";
 
 export const analyticsConsumer = createKafkaConsumer(
   {
@@ -36,20 +35,35 @@ export async function startAnalyticsConsumer() {
       }
 
       try {
-        const rawEvent = message.value.toString();
+        let event: unknown;
+        try {
+          event = JSON.parse(message.value.toString());
+        } catch {
+          kafkaConsumerErrors.inc({ topic, groupId: "analytics-service" });
+          console.error("[Analytics Consumer] Rejected invalid JSON", { topic, partition, offset: message.offset });
+          return;
+        }
+        const result = (topic === TOPICS.ORDERS ? orderSchema : paymentSchema).safeParse(event);
+        if (!result.success) {
+          kafkaConsumerErrors.inc({ topic, groupId: "analytics-service" });
+          console.error("[Analytics Consumer] Rejected invalid event", { topic, partition, offset: message.offset, issues: result.error.issues });
+          return;
+        }
 
         switch (topic) {
           case TOPICS.ORDERS: {
-            const order = JSON.parse(rawEvent) as OrderCreated;
+            const order = orderSchema.parse(result.data);
 
             slidingWindowService.recordOrder(order);
 
             break;
           }
           case TOPICS.PAYMENTS: {
-            const payment = JSON.parse(rawEvent) as PaymentProcessed;
-            const { processingMs } =
+            const payment = paymentSchema.parse(result.data);
+            const { accepted } =
               slidingWindowService.recordPayment(payment);
+
+            if (!accepted) break;
 
             if (payment.status === "SUCCESS") {
               paymentSuccessTotal.inc();
@@ -57,9 +71,6 @@ export async function startAnalyticsConsumer() {
               paymentFailureTotal.inc();
             }
 
-            if (typeof processingMs === "number") {
-              orderProcessingDuration.observe(processingMs / 1000);
-            }
 
             break;
           }
@@ -72,6 +83,7 @@ export async function startAnalyticsConsumer() {
           `[Analytics Consumer] Error processing event from ${topic}:`,
           error,
         );
+        throw error;
       }
     },
   });
