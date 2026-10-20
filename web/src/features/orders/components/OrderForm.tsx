@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCartStore } from "@/features/cart/store/cartStore";
@@ -34,6 +34,8 @@ export default function OrderForm() {
     useCartStore();
   const { addOrder } = useOrdersStore();
 
+  const idempotencyKeyRef = useRef(crypto.randomUUID());
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,20 +62,19 @@ export default function OrderForm() {
         quantity: item.quantity,
       }));
 
-      const newOrder = await createOrder(payload);
+      const newOrder = await createOrder(payload, idempotencyKeyRef.current);
 
-      // 1. Immediately inject the new order into the TanStack Query cache
+      idempotencyKeyRef.current = crypto.randomUUID();
+
       queryClient.setQueryData<Order[]>(["orders"], (oldOrders = []) => {
         return [newOrder, ...oldOrders.filter((o) => o.id !== newOrder.id)];
       });
 
-      // 2. Invalidate queries so data stays strictly synchronized with the database
       void queryClient.invalidateQueries({ queryKey: ["orders"] });
       void queryClient.invalidateQueries({ queryKey: ["shop-products"] });
       void queryClient.invalidateQueries({ queryKey: ["products"] });
       void queryClient.invalidateQueries({ queryKey: ["search-orders"] });
 
-      // 3. Update Zustand stores and UI state
       addOrder(newOrder);
       clear();
       setCheckoutOpen(false);

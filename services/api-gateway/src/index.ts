@@ -33,6 +33,13 @@ app.use(
   cors({
     origin: env.corsOrigins || "http://localhost:5173",
     credentials: true,
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Idempotency-Key",
+      "idempotency-key",
+      "x-requested-with",
+    ],
   }),
 );
 
@@ -68,18 +75,12 @@ app.use(
 
 app.use("/api/products", optionalToken, createGatewayProxy(SERVICES.product));
 
-app.get("/health", (_req, res) =>
-  res.json({ status: "ok", service: "api-gateway" }),
-);
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok", service: "api-gateway" });
+});
 
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`[API Gateway] Running on http://localhost:${PORT}`);
-  console.log(`[Services]`);
-  console.log(`auth-service: ${SERVICES.auth}`);
-  console.log(`order-service: ${SERVICES.order}`);
-  console.log(`search-service: ${SERVICES.search}`);
-  console.log(`analytics-service: ${SERVICES.analytics}`);
-  console.log(`products-service: ${SERVICES.product}`);
+  console.log(`[API-Gateway] Running on port ${PORT}`);
 });

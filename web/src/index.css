@@ -81,6 +81,12 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Custom Scrollbar Tokens */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: color-mix(in oklch, var(--muted-foreground) 25%, transparent);
+  --scrollbar-thumb-hover: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
+  --scrollbar-width: 7px;
 }
 
 .dark {
@@ -115,12 +121,47 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Custom Scrollbar Tokens (Dark) */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: color-mix(in oklch, var(--muted-foreground) 30%, transparent);
+  --scrollbar-thumb-hover: color-mix(in oklch, var(--muted-foreground) 55%, transparent);
+  --scrollbar-width: 7px;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   }
+
+  ::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+    height: var(--scrollbar-width);
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: var(--radius);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    transition: background-color 0.15s ease-in-out;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
   body {
     @apply bg-background text-foreground;
   }

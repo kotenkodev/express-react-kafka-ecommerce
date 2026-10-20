@@ -16,6 +16,7 @@ import {
   statusConsumer,
   startStatusConsumer,
 } from "./consumers/status.consumer";
+import { connectRedis, disconnectRedis } from "./lib/redis";
 
 dotenv.config();
 
@@ -82,6 +83,7 @@ async function shutdown(signal: string): Promise<void> {
   const results = await Promise.allSettled([
     orderProducer.disconnect(),
     prisma.$disconnect(),
+    disconnectRedis(),
   ]);
 
   for (const result of results) {
@@ -95,6 +97,7 @@ async function shutdown(signal: string): Promise<void> {
 }
 
 async function start(): Promise<void> {
+  await connectRedis();
   await orderProducer.connect();
   console.log("Order Kafka producer connected");
 

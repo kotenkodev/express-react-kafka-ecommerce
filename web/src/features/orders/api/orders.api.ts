@@ -10,8 +10,11 @@ export interface CreateOrderItemInput {
 
 export const createOrder = async (
   payload: CreateOrderItemInput[],
+  idempotencyKey?: string,
 ): Promise<Order> => {
-  const response = await axios.post(`${ORDER_URL}`, payload);
+  const response = await axios.post("/orders", payload, {
+    headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
+  });
   return response.data;
 };
 
