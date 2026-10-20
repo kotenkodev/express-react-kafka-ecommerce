@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
-import { AuthenticatedUser } from "@ecommerce/shared";
+import { authenticatedUserSchema } from "../schemas/authenticatedUser.schema";
 
 export const metricsAuth = (
   req: Request,
@@ -24,8 +24,9 @@ export const metricsAuth = (
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, env.jwtSecret) as AuthenticatedUser;
-      if (decoded.role === "admin") {
+      const decoded = jwt.verify(token, env.jwtSecret);
+      const result = authenticatedUserSchema.safeParse(decoded);
+      if (result.success && result.data.role === "admin") {
         return next();
       }
     } catch {}

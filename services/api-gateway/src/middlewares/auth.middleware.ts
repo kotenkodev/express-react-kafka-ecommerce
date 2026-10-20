@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { env } from "../config/env";
-import { AuthenticatedUser } from "@ecommerce/shared";
+import { authenticatedUserSchema } from "../schemas/authenticatedUser.schema";
 
 export const authenticateToken = (
   req: Request,
@@ -23,7 +23,11 @@ export const authenticateToken = (
     if (err) {
       return res.status(403).json({ error: "Invalid or expired token" });
     }
-    req.user = decoded as AuthenticatedUser;
+    const result = authenticatedUserSchema.safeParse(decoded);
+    if (!result.success) {
+      return res.status(403).json({ error: "Invalid or expired token" });
+    }
+    req.user = result.data;
     next();
   });
 };
@@ -42,7 +46,10 @@ export const optionalToken = (
 
   if (token) {
     jwt.verify(token, env.jwtSecret, (err, decoded) => {
-      if (!err) req.user = decoded as AuthenticatedUser;
+      if (!err) {
+        const result = authenticatedUserSchema.safeParse(decoded);
+        if (result.success) req.user = result.data;
+      }
       next();
     });
   } else {
