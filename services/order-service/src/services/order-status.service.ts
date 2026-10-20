@@ -60,35 +60,76 @@ export async function applyPaymentStatus(
   const eventTime = new Date(event.processedAt);
 
   return prisma.$transaction(async (tx) => {
-    if (event.status === "FAILED") {
-      await tx.order.updateMany({
-        where: {
-          id: event.orderId,
-          status: { in: ["PENDING", "PAID"] },
+    const existingOrder = await tx.order.findUnique({
+      where: { id: event.orderId },
+    });
+
+    if (!existingOrder) {
+      console.warn(`[Payment] Order ${event.orderId} not found`);
+      return null;
+    }
+
+    if (event.status === "SUCCESS") {
+      if (
+        existingOrder.paymentStatus === "SUCCESS" &&
+        existingOrder.status !== "PENDING"
+      ) {
+        return null;
+      }
+
+      const shouldAdvanceStatus = existingOrder.status === "PENDING";
+      const newStatus = shouldAdvanceStatus ? "PAID" : existingOrder.status;
+
+      const shouldUpdateTimestamp =
+        !existingOrder.statusUpdatedAt ||
+        (shouldAdvanceStatus && eventTime > existingOrder.statusUpdatedAt);
+
+      return tx.order.update({
+        where: { id: event.orderId },
+        data: {
+          paymentStatus: "SUCCESS",
+          status: newStatus,
+          ...(shouldUpdateTimestamp ? { statusUpdatedAt: eventTime } : {}),
         },
+      });
+    } else {
+      const activeDeliveryStatuses: DatabaseStatus[] = [
+        "PREPARING",
+        "PACKAGING",
+        "SHIPPED",
+        "SHIPPING",
+        "DELIVERED",
+      ];
+
+      if (
+        existingOrder.paymentStatus === "SUCCESS" ||
+        activeDeliveryStatuses.includes(existingOrder.status)
+      ) {
+        console.warn(
+          `[Payment] Ignored payment failure for order ${event.orderId} because order is already paid or active in delivery (${existingOrder.status})`,
+        );
+        return null;
+      }
+
+      if (
+        existingOrder.statusUpdatedAt &&
+        existingOrder.statusUpdatedAt > eventTime
+      ) {
+        console.warn(
+          `[Payment] Ignored stale payment failure for order ${event.orderId}`,
+        );
+        return null;
+      }
+
+      return tx.order.update({
+        where: { id: event.orderId },
         data: {
           status: "FAILED",
           paymentStatus: "FAILED",
           statusUpdatedAt: eventTime,
         },
       });
-    } else {
-      await tx.order.updateMany({
-        where: {
-          id: event.orderId,
-          status: "PENDING",
-        },
-        data: {
-          status: "PAID",
-          paymentStatus: "SUCCESS",
-          statusUpdatedAt: eventTime,
-        },
-      });
     }
-
-    return tx.order.findUnique({
-      where: { id: event.orderId },
-    });
   });
 }
 
@@ -99,20 +140,51 @@ export async function applyOrderDLQ(
   const eventTime = new Date(failedAt);
 
   return prisma.$transaction(async (tx) => {
-    await tx.order.updateMany({
-      where: {
-        id: orderId,
-        status: { not: "DELIVERED" },
-      },
+    const existingOrder = await tx.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!existingOrder) {
+      console.warn(`[DLQ] Order ${orderId} not found`);
+      return null;
+    }
+
+    const protectedStatuses: DatabaseStatus[] = [
+      "PAID",
+      "PREPARING",
+      "PACKAGING",
+      "SHIPPED",
+      "SHIPPING",
+      "DELIVERED",
+    ];
+
+    if (
+      existingOrder.paymentStatus === "SUCCESS" ||
+      protectedStatuses.includes(existingOrder.status)
+    ) {
+      console.warn(
+        `[DLQ] Ignored DLQ event for order ${orderId} because order is already paid or fulfillment is active (${existingOrder.status})`,
+      );
+      return null;
+    }
+
+    if (
+      existingOrder.statusUpdatedAt &&
+      existingOrder.statusUpdatedAt >= eventTime
+    ) {
+      console.warn(
+        `[DLQ] Ignored stale DLQ event for order ${orderId} (eventTime: ${failedAt}, statusUpdatedAt: ${existingOrder.statusUpdatedAt.toISOString()})`,
+      );
+      return null;
+    }
+
+    return tx.order.update({
+      where: { id: orderId },
       data: {
         status: "FAILED",
         paymentStatus: "FAILED",
         statusUpdatedAt: eventTime,
       },
-    });
-
-    return tx.order.findUnique({
-      where: { id: orderId },
     });
   });
 }

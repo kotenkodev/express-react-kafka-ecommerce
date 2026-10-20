@@ -4,7 +4,17 @@ import { publishOrderCreated } from "../producers/order.producer";
 
 export class OrderService {
   async createOrder(userId: string, items: OrderCreateInput) {
-    const productIds = items.map((item) => item.id);
+    const consolidatedMap = new Map<string, number>();
+    for (const item of items) {
+      const currentQty = consolidatedMap.get(item.id) || 0;
+      consolidatedMap.set(item.id, currentQty + item.quantity);
+    }
+
+    const consolidatedItems = Array.from(consolidatedMap.entries()).map(
+      ([id, quantity]) => ({ id, quantity }),
+    );
+
+    const productIds = consolidatedItems.map((item) => item.id);
 
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } },
@@ -15,7 +25,7 @@ export class OrderService {
 
     let totalAmount = 0;
 
-    for (const item of items) {
+    for (const item of consolidatedItems) {
       const product = productMap.get(item.id);
       if (!product) {
         throw new HttpError(`Product with ID ${item.id} not found`, 404);
@@ -31,7 +41,7 @@ export class OrderService {
     }
 
     const order = await prisma.$transaction(async (tx) => {
-      for (const item of items) {
+      for (const item of consolidatedItems) {
         const updateResult = await tx.product.updateMany({
           where: {
             id: item.id,
@@ -56,7 +66,7 @@ export class OrderService {
           totalAmount,
           items: {
             createMany: {
-              data: items.map((item) => ({
+              data: consolidatedItems.map((item) => ({
                 productId: item.id,
                 quantity: item.quantity,
                 unitPrice: Number(productMap.get(item.id)?.price),

@@ -86,23 +86,56 @@ export async function startStatusConsumer(): Promise<void> {
             break;
           }
           case TOPICS.PAYMENTS: {
-            const payment = JSON.parse(
-              message.value.toString(),
-            ) as PaymentProcessed;
+            let payment: PaymentProcessed;
+            try {
+              payment = JSON.parse(
+                message.value.toString(),
+              ) as PaymentProcessed;
+              if (!payment?.orderId || !payment?.status) {
+                throw new Error(
+                  "Invalid payment payload: missing orderId or status",
+                );
+              }
+            } catch (error) {
+              console.warn(
+                `[Order Consumer] Malformed payment message quarantined on offset ${message.offset}:`,
+                error,
+              );
+              return;
+            }
+
             const order = await applyPaymentStatus(payment);
             if (!order) return;
 
-            if (order) broadcastOrder(order, payment.processedAt);
+            broadcastOrder(order, payment.processedAt);
             break;
           }
           case TOPICS.ORDER_DLQ: {
-            const dlq = JSON.parse(message.value.toString()) as {
+            let dlq: {
               originalMessage?: { orderId?: string };
               failedAt?: string;
             };
+            try {
+              dlq = JSON.parse(message.value.toString()) as {
+                originalMessage?: { orderId?: string };
+                failedAt?: string;
+              };
+            } catch (error) {
+              console.warn(
+                `[Order Consumer] Malformed DLQ message on offset ${message.offset}:`,
+                error,
+              );
+              return;
+            }
+
             const orderId =
-              message.key?.toString() || dlq.originalMessage?.orderId;
-            if (!orderId) return;
+              message.key?.toString() || dlq?.originalMessage?.orderId;
+            if (!orderId) {
+              console.warn(
+                `[Order Consumer] DLQ message missing orderId on offset ${message.offset}`,
+              );
+              return;
+            }
 
             const failedAt = dlq.failedAt || new Date().toISOString();
             const order = await applyOrderDLQ(orderId, failedAt);
@@ -120,6 +153,7 @@ export async function startStatusConsumer(): Promise<void> {
           `[Order Consumer] Error processing topic ${topic}:`,
           error,
         );
+        throw error;
       }
     },
   });
