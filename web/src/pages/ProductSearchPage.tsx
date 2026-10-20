@@ -20,7 +20,14 @@ import ProductGrid from "@/features/products/components/ProductGrid";
 import { ProductQueryInput } from "@/features/products/schemas/product-query.schema";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useSearchParams } from "react-router-dom";
-import { Search, RefreshCw, AlertCircle } from "lucide-react";
+import {
+  Search,
+  RefreshCw,
+  AlertCircle,
+  X,
+  SlidersHorizontal,
+  RotateCcw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getErrorMessage } from "@/lib/error";
@@ -112,6 +119,10 @@ export default function ProductSearchPage() {
   const totalProducts = productsData?.pagination?.total || 0;
   const foundProducts = products.length;
 
+  const hasActiveFilters = Boolean(
+    q || category !== "all" || minPrice || maxPrice || inStock || page > 1,
+  );
+
   const updateFilter = (key: string, value: string | boolean | null) => {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
@@ -152,32 +163,126 @@ export default function ProductSearchPage() {
     );
   };
 
+  const handleResetFilters = () => {
+    setSearchParams(new URLSearchParams());
+  };
+
   return (
-    <div className="flex flex-col gap-8 p-4 md:p-8 max-w-7xl mx-auto w-full">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="space-y-1">
+    <div className="flex flex-col gap-6 max-w-7xl mx-auto w-full">
+      <div className="flex items-center justify-between">
+        <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold tracking-tight">Product Search</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Product Search
+            </h1>
             {isFetching && (
               <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
             )}
           </div>
-          <p className="text-muted-foreground">
-            Showing {foundProducts} of {totalProducts} products
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Discover catalog items by name, category, price range, and stock
+            availability.
           </p>
         </div>
+      </div>
 
-        <div className="relative w-full md:max-w-lg">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search products by name..."
-            className="w-full pl-9"
-            value={q}
-            onChange={(e) => updateFilter("q", e.target.value)}
-          />
+      <div className="sticky top-14 z-20 rounded-2xl border border-border/60 bg-background/95 p-3.5 shadow-xs backdrop-blur-md space-y-3">
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search products by name..."
+              className="pl-8 pr-8 h-9 text-xs rounded-xl"
+              value={q}
+              onChange={(e) => updateFilter("q", e.target.value)}
+            />
+            {q && (
+              <button
+                type="button"
+                onClick={() => updateFilter("q", "")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Clear product search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="w-full sm:w-52">
+            <Select
+              value={category}
+              onValueChange={(val) => updateFilter("category", val)}
+            >
+              <SelectTrigger className="h-9 text-xs rounded-xl">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="all" className="text-xs">
+                    All Categories
+                  </SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.name} className="text-xs">
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-border/40 bg-muted/20 shrink-0">
+            <Checkbox
+              id="inStock"
+              checked={inStock}
+              onCheckedChange={(checked) => updateFilter("inStock", checked)}
+            />
+            <Label
+              htmlFor="inStock"
+              className="cursor-pointer text-xs font-medium select-none"
+            >
+              In Stock Only
+            </Label>
+          </div>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 text-xs text-muted-foreground hover:text-foreground shrink-0"
+              onClick={handleResetFilters}
+            >
+              <RotateCcw className="h-3.5 w-3.5 mr-1" />
+              Reset
+            </Button>
+          )}
         </div>
-      </header>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2.5 border-t border-border/30 text-xs">
+          <div className="flex items-center gap-2 text-muted-foreground shrink-0">
+            <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="font-medium text-foreground">Price:</span>
+            <span className="tabular-nums font-semibold text-primary">
+              ${priceRange[0]} - ${priceRange[1]}
+            </span>
+          </div>
+
+          <div className="flex-1 max-w-md w-full px-2">
+            <Slider
+              min={0}
+              max={priceCeiling}
+              step={10}
+              value={priceRange}
+              onValueChange={handlePriceChange}
+            />
+          </div>
+
+          <div className="text-[11px] text-muted-foreground shrink-0 text-right">
+            Showing {foundProducts} of {totalProducts} products
+          </div>
+        </div>
+      </div>
 
       {error ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
@@ -196,90 +301,19 @@ export default function ProductSearchPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <aside className="md:col-span-1 space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Filters</h3>
+        /* Full width products grid */
+        <div className="space-y-6">
+          <ProductGrid
+            products={products}
+            isLoading={isLoading}
+            onAddToCart={addItem}
+          />
 
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Select
-                  value={category}
-                  onValueChange={(val) => updateFilter("category", val)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map((c) => (
-                        <SelectItem key={c.id} value={c.name}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <Label>Price Range</Label>
-                  <span className="text-sm text-muted-foreground">
-                    ${priceRange[0]} - ${priceRange[1]}
-                  </span>
-                </div>
-                <Slider
-                  min={0}
-                  max={priceCeiling}
-                  step={10}
-                  value={priceRange}
-                  onValueChange={handlePriceChange}
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="inStock"
-                  checked={inStock}
-                  onCheckedChange={(checked) => updateFilter("inStock", checked)}
-                />
-                <Label htmlFor="inStock" className="cursor-pointer">
-                  In Stock Only
-                </Label>
-              </div>
-
-              {(q ||
-                category !== "all" ||
-                minPrice ||
-                maxPrice ||
-                inStock ||
-                page > 1) && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setSearchParams(new URLSearchParams())}
-                >
-                  Reset Filters
-                </Button>
-              )}
-            </div>
-          </aside>
-
-          <main className="md:col-span-3 space-y-6">
-            <ProductGrid
-              products={products}
-              isLoading={isLoading}
-              onAddToCart={addItem}
-            />
-
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </main>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
     </div>

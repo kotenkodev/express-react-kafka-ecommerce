@@ -20,6 +20,67 @@ interface ProductTableProps {
   onDelete?: (product: Product) => void;
 }
 
+const ProductTableSkeleton = () => {
+  return (
+    <>
+      {Array.from({ length: 5 }).map((_, idx) => (
+        <TableRow key={idx}>
+          <TableCell className="py-3">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-10 w-10 rounded-xl" />
+              <div className="space-y-1.5 flex-1">
+                <Skeleton className="h-4 w-32 rounded-md" />
+                <Skeleton className="h-3 w-20 rounded-md" />
+              </div>
+            </div>
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-44 rounded-md" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-14 rounded-md" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-5 w-16 rounded-full" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-20 rounded-md" />
+          </TableCell>
+          <TableCell className="text-right">
+            <div className="flex items-center justify-end gap-1">
+              <Skeleton className="h-8 w-16 rounded-md" />
+              <Skeleton className="h-8 w-16 rounded-md" />
+            </div>
+          </TableCell>
+        </TableRow>
+      ))}
+    </>
+  );
+};
+
+const ProductTableEmpty = () => {
+  return (
+    <TableRow>
+      <TableCell colSpan={7} className="h-48 text-center">
+        <div className="flex flex-col items-center justify-center gap-2">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+            <PackageSearch className="h-6 w-6" />
+          </div>
+          <p className="font-medium text-sm text-foreground">
+            No products found
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Your product catalog is currently empty.
+          </p>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+};
+
 const ProductRow = ({
   product,
   onEdit,
@@ -45,7 +106,7 @@ const ProductRow = ({
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-xl border border-border/40 select-none">
             {product.emoji || "📦"}
           </div>
-          <div className="flex flex-col min-w-0 max-w-[220px]">
+          <div className="flex flex-col min-w-0 max-w-55">
             <span className="font-medium text-sm text-foreground truncate">
               {product.name}
             </span>
@@ -62,7 +123,7 @@ const ProductRow = ({
         </Badge>
       </TableCell>
 
-      <TableCell className="max-w-[260px]">
+      <TableCell className="max-w-65">
         <p
           className="text-xs text-muted-foreground truncate"
           title={product.description || ""}
@@ -135,67 +196,20 @@ export function ProductTable({
       <Table>
         <TableHeader className="bg-muted/30">
           <TableRow>
-            <TableHead className="min-w-[240px]">Product</TableHead>
-            <TableHead className="min-w-[120px]">Category</TableHead>
-            <TableHead className="min-w-[220px]">Description</TableHead>
-            <TableHead className="min-w-[100px]">Price</TableHead>
-            <TableHead className="min-w-[100px]">Stock</TableHead>
-            <TableHead className="min-w-[120px]">Created</TableHead>
-            <TableHead className="text-right min-w-[160px]">Actions</TableHead>
+            <TableHead className="min-w-60">Product</TableHead>
+            <TableHead className="min-w-30">Category</TableHead>
+            <TableHead className="min-w-55">Description</TableHead>
+            <TableHead className="min-w-25">Price</TableHead>
+            <TableHead className="min-w-25">Stock</TableHead>
+            <TableHead className="min-w-30">Created</TableHead>
+            <TableHead className="text-right min-w-40">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            Array.from({ length: 5 }).map((_, idx) => (
-              <TableRow key={idx}>
-                <TableCell className="py-3">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-10 w-10 rounded-xl" />
-                    <div className="space-y-1.5 flex-1">
-                      <Skeleton className="h-4 w-32 rounded-md" />
-                      <Skeleton className="h-3 w-20 rounded-md" />
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-5 w-20 rounded-full" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-44 rounded-md" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-14 rounded-md" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-5 w-16 rounded-full" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-20 rounded-md" />
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <Skeleton className="h-8 w-16 rounded-md" />
-                    <Skeleton className="h-8 w-16 rounded-md" />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
+            <ProductTableSkeleton />
           ) : products.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7} className="h-48 text-center">
-                <div className="flex flex-col items-center justify-center gap-2">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-                    <PackageSearch className="h-6 w-6" />
-                  </div>
-                  <p className="font-medium text-sm text-foreground">
-                    No products found
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Your product catalog is currently empty.
-                  </p>
-                </div>
-              </TableCell>
-            </TableRow>
+            <ProductTableEmpty />
           ) : (
             products.map((product) => (
               <ProductRow

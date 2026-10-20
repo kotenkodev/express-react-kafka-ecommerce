@@ -37,13 +37,6 @@ export default function OrdersPage() {
             <h1 className="text-xl font-bold tracking-tight text-foreground">
               {isAdmin ? "All Orders (Admin)" : "My Orders"}
             </h1>
-            <Badge
-              variant="outline"
-              className="gap-1.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px]"
-            >
-              <Radio className="h-3 w-3 animate-pulse" />
-              Live SSE
-            </Badge>
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {isAdmin
@@ -73,7 +66,10 @@ export default function OrdersPage() {
             <PackageSearch className="h-5 w-5" aria-hidden="true" />
           </div>
           <h2 className="text-sm font-semibold">Failed to load orders</h2>
-          <p role="alert" className="mt-1 max-w-sm text-xs text-muted-foreground">
+          <p
+            role="alert"
+            className="mt-1 max-w-sm text-xs text-muted-foreground"
+          >
             {errorMessage}
           </p>
           <Button

@@ -7,6 +7,53 @@ import { getErrorMessage } from "@/lib/error";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, PackageSearch } from "lucide-react";
 
+const CatalogError = ({
+  error,
+  onRetry,
+  isRetrying,
+}: {
+  error: Error | null;
+  onRetry: () => void;
+  isRetrying: boolean;
+}) => (
+  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
+    <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+      <PackageSearch className="h-5 w-5" />
+    </div>
+    <h2 className="text-sm font-semibold text-foreground">
+      Failed to load catalog
+    </h2>
+    <p className="mt-1 max-w-sm text-xs text-muted-foreground">
+      {getErrorMessage(error)}
+    </p>
+    <Button
+      variant="outline"
+      size="sm"
+      className="mt-3 text-xs"
+      onClick={onRetry}
+      disabled={isRetrying}
+    >
+      <RefreshCw
+        className={`h-3 w-3 mr-1.5 ${isRetrying ? "animate-spin" : ""}`}
+      />
+      Try again
+    </Button>
+  </div>
+);
+
+const LoadingMoreIndicator = () => (
+  <div className="flex justify-center items-center py-4 text-xs text-muted-foreground">
+    <RefreshCw className="h-3.5 w-3.5 animate-spin mr-2 text-primary" />
+    Loading more products...
+  </div>
+);
+
+const EndOfCatalogIndicator = () => (
+  <p className="text-center text-xs text-muted-foreground pt-2">
+    You've reached the end of the catalog.
+  </p>
+);
+
 export default function ShopPage() {
   const { addItem } = useCartStore();
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -22,8 +69,7 @@ export default function ShopPage() {
     isRefetching,
   } = useInfiniteQuery({
     queryKey: ["shop-products"],
-    queryFn: ({ pageParam = 1 }) =>
-      getProducts({ page: pageParam, limit: 12 }),
+    queryFn: ({ pageParam = 1 }) => getProducts({ page: pageParam, limit: 12 }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.pagination.page < lastPage.pagination.totalPages
@@ -62,29 +108,11 @@ export default function ShopPage() {
       </div>
 
       {error && products.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
-          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
-            <PackageSearch className="h-5 w-5" />
-          </div>
-          <h2 className="text-sm font-semibold text-foreground">
-            Failed to load catalog
-          </h2>
-          <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-            {getErrorMessage(error)}
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3 text-xs"
-            onClick={() => refetch()}
-            disabled={isRefetching}
-          >
-            <RefreshCw
-              className={`h-3 w-3 mr-1.5 ${isRefetching ? "animate-spin" : ""}`}
-            />
-            Try again
-          </Button>
-        </div>
+        <CatalogError
+          error={error}
+          onRetry={() => refetch()}
+          isRetrying={isRefetching}
+        />
       ) : (
         <>
           <ProductGrid
@@ -95,18 +123,9 @@ export default function ShopPage() {
 
           <div ref={loadMoreRef} className="h-4" aria-hidden="true" />
 
-          {isFetchingNextPage && (
-            <div className="flex justify-center items-center py-4 text-xs text-muted-foreground">
-              <RefreshCw className="h-3.5 w-3.5 animate-spin mr-2 text-primary" />
-              Loading more products...
-            </div>
-          )}
+          {isFetchingNextPage && <LoadingMoreIndicator />}
 
-          {!hasNextPage && products.length > 0 && (
-            <p className="text-center text-xs text-muted-foreground pt-2">
-              You've reached the end of the catalog.
-            </p>
-          )}
+          {!hasNextPage && products.length > 0 && <EndOfCatalogIndicator />}
         </>
       )}
     </div>

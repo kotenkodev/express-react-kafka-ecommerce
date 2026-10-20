@@ -30,6 +30,81 @@ const ORDER_STATUS_OPTIONS = [
   { value: "CANCELED", label: "CANCELED" },
 ];
 
+const SearchSkeletons = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+    {Array.from({ length: 4 }).map((_, idx) => (
+      <div
+        key={idx}
+        className="rounded-xl border border-border/60 bg-card p-3.5 space-y-2.5"
+      >
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-5 w-40 rounded" />
+          <Skeleton className="h-5 w-20 rounded-full" />
+        </div>
+        <Skeleton className="h-10 w-full rounded" />
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-3.5 w-28 rounded" />
+          <Skeleton className="h-5 w-16 rounded" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const SearchError = ({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) => (
+  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
+    <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+      <PackageSearch className="h-5 w-5" />
+    </div>
+    <h2 className="text-sm font-semibold text-foreground">Search Error</h2>
+    <p className="mt-1 max-w-sm text-xs text-muted-foreground">{message}</p>
+    <Button
+      variant="outline"
+      size="sm"
+      className="mt-3 text-xs"
+      onClick={onRetry}
+    >
+      Try again
+    </Button>
+  </div>
+);
+
+const SearchEmpty = ({
+  hasFilters,
+  onReset,
+}: {
+  hasFilters: boolean;
+  onReset: () => void;
+}) => (
+  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
+    <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+      <PackageSearch className="h-5 w-5" />
+    </div>
+    <h2 className="text-sm font-semibold text-foreground">No orders found</h2>
+    <p className="mt-1 max-w-sm text-xs text-muted-foreground">
+      {hasFilters
+        ? "Try adjusting your search terms or clearing status filters."
+        : "No indexed orders found in Elasticsearch."}
+    </p>
+    {hasFilters && (
+      <Button
+        variant="outline"
+        size="sm"
+        className="mt-3 text-xs"
+        onClick={onReset}
+      >
+        Reset filters
+      </Button>
+    )}
+  </div>
+);
+
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -159,71 +234,17 @@ export default function SearchPage() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-          {Array.from({ length: 4 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="rounded-xl border border-border/60 bg-card p-3.5 space-y-2.5"
-            >
-              <div className="flex justify-between items-center">
-                <Skeleton className="h-5 w-40 rounded" />
-                <Skeleton className="h-5 w-20 rounded-full" />
-              </div>
-              <Skeleton className="h-10 w-full rounded" />
-              <div className="flex justify-between items-center">
-                <Skeleton className="h-3.5 w-28 rounded" />
-                <Skeleton className="h-5 w-16 rounded" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <SearchSkeletons />
       ) : errorMessage ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
-          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
-            <PackageSearch className="h-5 w-5" />
-          </div>
-          <h2 className="text-sm font-semibold text-foreground">
-            Search Error
-          </h2>
-          <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-            {errorMessage}
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3 text-xs"
-            onClick={() => refetch()}
-          >
-            Try again
-          </Button>
-        </div>
+        <SearchError message={errorMessage} onRetry={() => refetch()} />
       ) : orders.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/20 p-8 text-center">
-          <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-            <PackageSearch className="h-5 w-5" />
-          </div>
-          <h2 className="text-sm font-semibold text-foreground">
-            No orders found
-          </h2>
-          <p className="mt-1 max-w-sm text-xs text-muted-foreground">
-            {debouncedQuery || statusFilter !== "ALL"
-              ? "Try adjusting your search terms or clearing status filters."
-              : "No indexed orders found in Elasticsearch."}
-          </p>
-          {(debouncedQuery || statusFilter !== "ALL") && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3 text-xs"
-              onClick={() => {
-                setSearchInput("");
-                setStatusFilter("ALL");
-              }}
-            >
-              Reset filters
-            </Button>
-          )}
-        </div>
+        <SearchEmpty
+          hasFilters={Boolean(debouncedQuery || statusFilter !== "ALL")}
+          onReset={() => {
+            setSearchInput("");
+            setStatusFilter("ALL");
+          }}
+        />
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
