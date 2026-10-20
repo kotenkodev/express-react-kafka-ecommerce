@@ -52,8 +52,8 @@ flowchart TD
 | **Order Service**     | `3001`           | `/api/orders`, `/api/events` | Bearer Token              | Order creation, retrieval, and SSE event streaming                 |
 | **Payment Service**   | `3002`           | Worker                       | Internal Kafka            | Consumes `orders`, simulates 80% success / 20% failure, retries 3x |
 | **Delivery Service**  | `3003`           | Worker                       | Internal Kafka            | Consumes `payments`, simulates courier stages every 5s             |
-| **Search Service**    | `3005`           | `/api/search`                | Bearer Token              | Elasticsearch full-text order indexing and search                  |
-| **Analytics Service** | `3004`           | `/api/analytics`             | Bearer Token              | 1-minute sliding window aggregations and Prometheus scraping       |
+| **Search Service**    | `3005`           | `/api/search`                | Bearer Token + `admin`    | Elasticsearch full-text order indexing and search                  |
+| **Analytics Service** | `3004`           | `/api/analytics`             | Bearer Token + `admin`    | 1-minute sliding window aggregations and Prometheus scraping       |
 | **Kafka Broker**      | `9092` / `29092` | Internal / External          | N/A                       | High-throughput distributed event broker                           |
 | **Elasticsearch**     | `9200`           | Internal                     | N/A                       | Search engine and distributed analytics                            |
 | **Redis**             | `6379`           | Internal                     | N/A                       | In-memory refresh token store (`refresh_token:<userId>`)           |

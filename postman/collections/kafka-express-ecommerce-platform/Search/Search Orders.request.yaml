@@ -1,17 +1,20 @@
 $kind: http-request
 description: |-
-  ### Full-Text Order Search (Elasticsearch)
+  ### Full-Text Order Search (Elasticsearch) — Admin Only
   Executes a full-text query across indexed orders in Elasticsearch. Allows filtering by status, matching against customer details or item descriptions, and paginating through results.
 
+  > **Requires `admin` role.** Requests from `user` accounts will receive `403 Forbidden`.
+
   #### Query Parameters:
-  - `q` (string, optional): Full-text query string (matches order items, courier name, etc.).
-  - `status` (string, optional): Filter by order status (`PENDING`, `PREPARING`, `SHIPPED`, `DELIVERED`, `FAILED`).
+  - `q` (string, optional): Full-text query string (matches order items, courier name, etc.). Alias: `query`.
+  - `status` (string, optional): Filter by order status. Accepted values: `PENDING`, `PAID`, `PREPARING`, `SHIPPED`, `DELIVERED`, `FAILED`, `CANCELED`, `payment_failed`.
   - `page` (integer, optional): Page number (default: `1`).
-  - `limit` (integer, optional): Items per page (default: `10`).
+  - `limit` (integer, optional): Items per page (default: `10`, max: `100`).
 
   #### Responses:
   - `200 OK`: Returns paginated search results with total hit counts.
   - `401 Unauthorized`: Missing or invalid Bearer token.
+  - `403 Forbidden`: Authenticated user does not have the `admin` role.
 order: 1000
 method: GET
 url: "{{baseUrl}}/api/search"

@@ -1,7 +1,9 @@
 $kind: http-request
 description: |-
-  ### Get Real-Time Sliding Window Analytics
+  ### Get Real-Time Sliding Window Analytics — Admin Only
   Retrieves real-time aggregated throughput metrics computed over a 1-minute tumbling/sliding window by `analytics-service`.
+
+  > **Requires `admin` role.** Requests from `user` accounts will receive `403 Forbidden`.
 
   #### Metrics Included:
   - `ordersCount`: Number of orders processed in the window.
@@ -12,6 +14,7 @@ description: |-
   #### Responses:
   - `200 OK`: Returns window analytics payload.
   - `401 Unauthorized`: Missing or invalid Bearer token.
+  - `403 Forbidden`: Authenticated user does not have the `admin` role.
 order: 1000
 method: GET
 url: "{{baseUrl}}/api/analytics"

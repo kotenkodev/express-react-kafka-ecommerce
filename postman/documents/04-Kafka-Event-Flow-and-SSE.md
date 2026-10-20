@@ -45,7 +45,7 @@ sequenceDiagram
     else Payment Failed (20% with retries)
         PaymentSvc->>PaymentSvc: Retry backoff (1s, 2s, 4s)
         PaymentSvc->>Kafka: Publish to 'order.dlq' after 3 retries
-        Kafka->>SearchSvc: Update status = "payment_failed"
+        Kafka->>SearchSvc: Update status = "FAILED" / "payment_failed"
         Kafka->>OrderSvc: Update order status to FAILED
         OrderSvc->>ClientSSE: Push SSE event { status: "FAILED" }
     end
@@ -118,7 +118,26 @@ sequenceDiagram
 
 ---
 
-## 3. Server-Sent Events (SSE) Testing Guide
+## 3. Order Status Lifecycle
+
+The complete set of order statuses used across the platform (PostgreSQL, Kafka events, SSE, and Elasticsearch index):
+
+| Status | Source | Description |
+| :--- | :--- | :--- |
+| `PENDING` | Order Service | Initial state after order creation |
+| `PAID` | Payment Service | Payment succeeded (intermediate state before delivery) |
+| `PREPARING` | Delivery Service | Courier is preparing the shipment |
+| `SHIPPED` | Delivery Service | Order dispatched to courier |
+| `DELIVERED` | Delivery Service | Order successfully delivered |
+| `FAILED` | Order Service / DLQ | Order failed after exhausting payment retries |
+| `CANCELED` | Order Service | Order was explicitly canceled |
+| `payment_failed` | Search Service | Elasticsearch-specific label for DLQ-routed failures |
+
+> **Search filter note:** The `status` query parameter on `GET /api/search` accepts all values above. Use `CANCELED` (uppercase) for canceled orders and `payment_failed` (lowercase) for DLQ-indexed failures.
+
+---
+
+## 4. Server-Sent Events (SSE) Testing Guide
 
 The endpoint `/api/events` streams live events to the authenticated user.
 

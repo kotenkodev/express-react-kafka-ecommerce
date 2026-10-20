@@ -14,6 +14,9 @@ const schema = z.object({
   JWT_SECRET: z.string().min(16),
   CORS_ORIGINS: z.string().optional(),
   TRUST_PROXY: z.string().default(""),
+  METRICS_SCRAPE_TOKEN: z
+    .string()
+    .default("internal-prometheus-metrics-secret-key"),
 });
 
 const raw = schema.parse(process.env);
@@ -27,6 +30,7 @@ export const env = {
   searchServiceUrl: raw.SEARCH_SERVICE_URL,
   analyticsServiceUrl: raw.ANALYTICS_SERVICE_URL,
   jwtSecret: raw.JWT_SECRET,
+  metricsScrapeToken: raw.METRICS_SCRAPE_TOKEN,
   trustProxy: raw.TRUST_PROXY.split(",")
     .map((value) => value.trim())
     .filter(Boolean),

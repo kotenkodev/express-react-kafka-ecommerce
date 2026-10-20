@@ -77,16 +77,34 @@ flowchart LR
 
 ---
 
-## 3. Running Headless in CI/CD with Newman
+## 3. Idempotent Order Creation
 
-You can execute the entire collection in terminal or CI/CD pipelines using Newman:
+The `POST /api/orders` endpoint supports an optional `Idempotency-Key` header to prevent duplicate orders when clients retry a request (e.g. after a network timeout).
+
+| Scenario | Behaviour |
+| :--- | :--- |
+| First request with a key | Order is created normally and the response is cached in Redis. |
+| Retry with the same key (order already saved) | Returns the original `200 OK` response immediately — no duplicate order. |
+| Retry while the first request is still in-flight | Returns `409 Conflict` with `"Order is already being processed. Please wait."` |
+| Request without a key | Standard non-idempotent creation — no deduplication. |
+
+To test idempotency in Postman, add the header `Idempotency-Key: <any-unique-string>` to the **Create Order** request and send it twice. The second call should return the same order object without creating a new record.
+
+---
+
+## 4. Running Headless in CI/CD with Newman
+
+You can execute the entire collection in terminal or CI/CD pipelines using Newman. The workspace stores collections and environments as YAML files under `postman/`.
 
 ### Installation
 ```bash
 npm install -g newman
 ```
 
-### Run with Local Environment File
+### Export & Run (Postman Desktop)
+
+Export the collection and environment from Postman Desktop (File → Export) and then run:
+
 ```bash
 newman run postman/Kafka-Express-Ecommerce.postman_collection.json \
   -e postman/Local-Development.postman_environment.json \

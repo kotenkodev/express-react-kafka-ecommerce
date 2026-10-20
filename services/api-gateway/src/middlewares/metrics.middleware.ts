@@ -3,9 +3,6 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { AuthenticatedUser } from "@ecommerce/shared";
 
-const METRICS_SECRET =
-  process.env.METRICS_SCRAPE_TOKEN || "internal-prometheus-metrics-secret-key";
-
 export const metricsAuth = (
   req: Request,
   res: Response,
@@ -16,7 +13,7 @@ export const metricsAuth = (
     ? authHeader.split(" ")[1]
     : null;
 
-  if (token === METRICS_SECRET) {
+  if (token === env.metricsScrapeToken) {
     return next();
   }
 
