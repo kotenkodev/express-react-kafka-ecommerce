@@ -251,7 +251,6 @@ export default function SearchPage() {
             ))}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center pt-1">
               <Pagination

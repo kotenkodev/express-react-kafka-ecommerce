@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./Sidebar";
 import { SidebarCart } from "@/features/cart/components/SidebarCart";
+import OrderForm from "@/features/orders/components/OrderForm";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { ShoppingCartIcon } from "lucide-react";
 import { useCartStore } from "@/features/cart/store/cartStore";
@@ -49,14 +50,19 @@ export default function MainLayout() {
         </div>
       </SidebarInset>
 
-      {isCustomer && isOpen && (
+      {isCustomer && (
         <>
-          <div
-            onClick={() => useCartStore.getState().setIsOpen(false)}
-            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-xs md:hidden"
-            aria-hidden="true"
-          />
-          <SidebarCart />
+          {isOpen && (
+            <>
+              <div
+                onClick={() => useCartStore.getState().setIsOpen(false)}
+                className="fixed inset-0 z-30 bg-black/40 backdrop-blur-xs md:hidden"
+                aria-hidden="true"
+              />
+              <SidebarCart />
+            </>
+          )}
+          <OrderForm />
         </>
       )}
     </SidebarProvider>

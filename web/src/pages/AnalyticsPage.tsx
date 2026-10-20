@@ -107,7 +107,6 @@ export default function AnalyticsPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4">
-      {/* Page Header */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2.5">
@@ -123,7 +122,8 @@ export default function AnalyticsPage() {
             </Badge>
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Real-time performance indicators from 1-min sliding window & Elasticsearch.
+            Real-time performance indicators from 1-min sliding window &
+            Elasticsearch.
           </p>
         </div>
 
@@ -142,9 +142,7 @@ export default function AnalyticsPage() {
         </Button>
       </div>
 
-      {/* 4 Stat Cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {/* Total Orders */}
         <Card className="rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-muted-foreground">
@@ -157,10 +155,11 @@ export default function AnalyticsPage() {
           <div className="mt-1 text-xl font-bold text-foreground">
             {stats.totalOrders}
           </div>
-          <p className="text-[10px] text-muted-foreground">All indexed orders</p>
+          <p className="text-[10px] text-muted-foreground">
+            All indexed orders
+          </p>
         </Card>
 
-        {/* Total Revenue */}
         <Card className="rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-muted-foreground">
@@ -173,10 +172,11 @@ export default function AnalyticsPage() {
           <div className="mt-1 text-xl font-bold text-foreground">
             ${Number(stats.totalRevenue).toFixed(2)}
           </div>
-          <p className="text-[10px] text-muted-foreground">Platform lifetime revenue</p>
+          <p className="text-[10px] text-muted-foreground">
+            Platform lifetime revenue
+          </p>
         </Card>
 
-        {/* Average Order Amount */}
         <Card className="rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-muted-foreground">
@@ -189,10 +189,11 @@ export default function AnalyticsPage() {
           <div className="mt-1 text-xl font-bold text-foreground">
             ${Number(stats.avgOrderAmount).toFixed(2)}
           </div>
-          <p className="text-[10px] text-muted-foreground">Average order value</p>
+          <p className="text-[10px] text-muted-foreground">
+            Average order value
+          </p>
         </Card>
 
-        {/* Payment Time */}
         <Card className="rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-muted-foreground">
@@ -205,13 +206,13 @@ export default function AnalyticsPage() {
           <div className="mt-1 text-xl font-bold text-foreground">
             {analytics.avgProcessingMs} ms
           </div>
-          <p className="text-[10px] text-muted-foreground">Avg processing latency</p>
+          <p className="text-[10px] text-muted-foreground">
+            Avg processing latency
+          </p>
         </Card>
       </div>
 
-      {/* Charts Grid */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {/* Line Chart */}
         <Card className="overflow-hidden rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
           <CardHeader className="p-0 pb-2">
             <CardTitle className="text-sm font-semibold text-foreground">
@@ -263,7 +264,6 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
 
-        {/* Pie Chart */}
         <Card className="overflow-hidden rounded-xl border border-border/60 bg-card p-3.5 shadow-2xs">
           <CardHeader className="p-0 pb-2">
             <CardTitle className="text-sm font-semibold text-foreground">

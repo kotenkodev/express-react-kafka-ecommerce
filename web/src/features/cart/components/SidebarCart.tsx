@@ -18,15 +18,14 @@ import { Button } from "@/components/ui/button";
 import { useCartStore } from "../store/cartStore";
 
 export function SidebarCart() {
-  const navigate = useNavigate();
-  const { items, removeItem, updateQty, clear, total, count, setIsOpen } =
+  const { items, removeItem, updateQty, clear, total, count, setIsOpen, setCheckoutOpen } =
     useCartStore();
 
   const totalCount = count();
   const totalPrice = total();
 
   const handleCheckout = () => {
-    navigate("/orders");
+    setCheckoutOpen(true);
   };
 
   return (

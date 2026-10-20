@@ -32,9 +32,12 @@ export function useOrderSSE() {
 
         const shortId = (data.orderId || data.id || "").slice(0, 8);
         if (data.status) {
-          toast.info(`Order #${shortId || "update"}: status is now ${data.status}`, {
-            id: `order-status-${data.orderId || data.id}-${data.status}`,
-          });
+          toast.info(
+            `Order #${shortId || "update"}: status is now ${data.status}`,
+            {
+              id: `order-status-${data.orderId || data.id}-${data.status}`,
+            },
+          );
         }
       } catch (err) {
         console.error("[useOrderSSE] Failed to parse SSE message:", err);
@@ -46,7 +49,6 @@ export function useOrderSSE() {
     eventSource.onmessage = handleOrderEvent;
 
     eventSource.onerror = (err) => {
-      // EventSource reconnects automatically on network blips.
       console.warn("[useOrderSSE] EventSource connection issue:", err);
     };
 
@@ -58,4 +60,3 @@ export function useOrderSSE() {
     };
   }, [accessToken, updateOrderStatus]);
 }
-

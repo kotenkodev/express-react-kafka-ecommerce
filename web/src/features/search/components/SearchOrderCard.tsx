@@ -1,4 +1,10 @@
-import { CalendarDays, CreditCard, Package, Truck, UserRound } from "lucide-react";
+import {
+  CalendarDays,
+  CreditCard,
+  Package,
+  Truck,
+  UserRound,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import OrderStatusBadge from "@/features/orders/components/OrderStatusBadge";
 import type { OrderStatus } from "@/features/orders/types";
@@ -16,7 +22,6 @@ export default function SearchOrderCard({ order }: SearchOrderCardProps) {
 
   return (
     <Card className="overflow-hidden rounded-xl border border-border/60 bg-card p-0 shadow-xs transition-all duration-200 hover:border-primary/40 hover:shadow-sm">
-      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-border/40 bg-gradient-to-b from-muted/40 to-muted/10 p-3 sm:px-4">
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/40 bg-background/80 text-muted-foreground shadow-2xs">
@@ -37,7 +42,6 @@ export default function SearchOrderCard({ order }: SearchOrderCardProps) {
         <OrderStatusBadge status={order.status as OrderStatus} />
       </div>
 
-      {/* Customer user row */}
       <div className="flex items-center gap-2 border-b border-border/40 bg-muted/5 px-3 py-2 sm:px-4 text-xs">
         <UserRound className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         <span className="text-[11px] text-muted-foreground">Customer ID:</span>
@@ -46,7 +50,6 @@ export default function SearchOrderCard({ order }: SearchOrderCardProps) {
         </span>
       </div>
 
-      {/* Items list */}
       {order.items && order.items.length > 0 && (
         <div className="max-h-48 overflow-y-auto divide-y divide-border/30 px-3 sm:px-4 text-xs">
           {order.items.map((item, idx) => (
@@ -70,7 +73,6 @@ export default function SearchOrderCard({ order }: SearchOrderCardProps) {
         </div>
       )}
 
-      {/* Footer */}
       <div className="flex flex-wrap items-end justify-between gap-3 border-t border-border/40 bg-muted/10 p-3 sm:px-4">
         <div className="space-y-1 text-xs text-muted-foreground">
           <p className="flex items-center gap-1.5 font-medium">
@@ -92,7 +94,9 @@ export default function SearchOrderCard({ order }: SearchOrderCardProps) {
           <p className="flex items-center gap-1.5 text-[11px]">
             <Truck className="h-3 w-3 shrink-0" aria-hidden="true" />
             <span>
-              {order.courier ? `Courier: ${order.courier}` : "Courier unassigned"}
+              {order.courier
+                ? `Courier: ${order.courier}`
+                : "Courier unassigned"}
             </span>
           </p>
           {order.createdAt && (

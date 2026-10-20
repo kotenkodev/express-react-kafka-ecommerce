@@ -26,7 +26,6 @@ export type UserResponse = Prisma.UserGetPayload<{
   select: typeof publicUserSelect;
 }>;
 
-// Reuse a random dummy hash so missing accounts still perform password verification.
 let dummyPasswordHash: Promise<string> | undefined;
 function getDummyPasswordHash(): Promise<string> {
   return (dummyPasswordHash ??= hashPassword(randomBytes(32).toString("hex")));
