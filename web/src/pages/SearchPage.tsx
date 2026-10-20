@@ -17,6 +17,7 @@ import {
 import { Search, X, PackageSearch, Filter, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getErrorMessage } from "@/lib/error";
+import PageMeta from "@/components/PageMeta";
 
 const ORDER_STATUS_OPTIONS = [
   { value: "ALL", label: "All statuses" },
@@ -163,6 +164,14 @@ export default function SearchPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-4">
+      <PageMeta
+        title={
+          searchInput.trim()
+            ? `Orders: "${searchInput.trim()}"`
+            : "Elasticsearch Order Search"
+        }
+        description="Search across orders using full-text Elasticsearch indexing by Order ID, courier, customer, or product."
+      />
       <div>
         <h1 className="text-xl font-bold tracking-tight text-foreground">
           Order Search
