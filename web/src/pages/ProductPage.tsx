@@ -117,7 +117,7 @@ function ProductDetails({ id }: { id: string | undefined }) {
       ) : (
         <Card className="gap-0 overflow-hidden rounded-2xl border-border/60 bg-card p-0 shadow-sm">
           <div className="grid md:grid-cols-2">
-            <div className="relative flex min-h-72 items-center justify-center overflow-hidden border-b border-border/40 bg-gradient-to-b from-muted/50 to-muted/20 p-10 md:min-h-112 md:border-r md:border-b-0">
+            <div className="relative flex min-h-72 items-center justify-center overflow-hidden border-b border-border/40 bg-linear-to-b from-muted/50 to-muted/20 p-10 md:min-h-112 md:border-r md:border-b-0">
               {product.category?.name && (
                 <Badge
                   variant="secondary"
@@ -153,7 +153,7 @@ function ProductDetails({ id }: { id: string | undefined }) {
                       ? `Only ${product.stock} left`
                       : "In stock"}
                 </Badge>
-                <h1 className="break-words text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                <h1 className="wrap-break-word text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                   {product.name}
                 </h1>
                 <div>
@@ -168,7 +168,7 @@ function ProductDetails({ id }: { id: string | undefined }) {
 
               <div className="space-y-2 border-t border-border/40 pt-5">
                 <h2 className="text-sm font-semibold">About this product</h2>
-                <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">
+                <p className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-muted-foreground">
                   {product.description || "No description available."}
                 </p>
               </div>
