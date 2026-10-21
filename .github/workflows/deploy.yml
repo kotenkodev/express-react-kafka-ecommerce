@@ -31,8 +31,10 @@ jobs:
         run: |
           docker compose -f docker-compose.prod.yml ps
 
+      - name: Migrate Database
+        run: |
+          docker compose -f docker-compose.prod.yml exec -T product-service npx prisma migrate deploy --schema=../../shared/prisma/schema.prisma
+
       - name: Seed Database
         run: |
-          # Wait for 10 seconds for the healthcheck
-          sleep 10
           docker compose -f docker-compose.prod.yml exec -T product-service npm run db:seed

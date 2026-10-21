@@ -20,6 +20,7 @@
   "scripts": {
     "build": "npm run db:generate && tsc && tsc prisma/seed.ts --outDir dist --skipLibCheck --module Node16 --moduleResolution Node16 --target ES2022 --esModuleInterop",
     "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
     "db:validate": "prisma validate",
     "db:seed": "tsx prisma/seed.ts",
     "format": "prettier --write ."
