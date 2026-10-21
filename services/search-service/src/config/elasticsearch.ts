@@ -17,8 +17,14 @@ export async function initElasticsearch(): Promise<void> {
         index: ORDERS_INDEX,
         mappings: {
           properties: {
-            orderId: { type: "keyword" },
-            userId: { type: "keyword" },
+            orderId: {
+              type: "keyword",
+              fields: { text: { type: "text" } },
+            },
+            userId: {
+              type: "keyword",
+              fields: { text: { type: "text" } },
+            },
             status: { type: "keyword" },
             courier: {
               type: "text",
@@ -26,7 +32,10 @@ export async function initElasticsearch(): Promise<void> {
             },
             items: {
               properties: {
-                productId: { type: "keyword" },
+                productId: {
+                  type: "keyword",
+                  fields: { text: { type: "text" } },
+                },
                 quantity: { type: "integer" },
                 price: { type: "double" },
               },

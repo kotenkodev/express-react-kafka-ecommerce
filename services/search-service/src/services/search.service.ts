@@ -25,18 +25,68 @@ export class SearchService {
     const filter: any[] = [];
 
     if (queryString) {
+      const sanitizedWildcard = `*${queryString.replace(/[*?\\]/g, "")}*`;
+      const upperQuery = queryString.toUpperCase();
+
       must.push({
-        multi_match: {
-          query: queryString,
-          fields: [
-            "orderId^3",
-            "userId",
-            "courier^2",
-            "items.productId",
-            "status",
+        bool: {
+          should: [
+            // Exact full matches with highest boost
+            { term: { orderId: { value: queryString, boost: 10 } } },
+            { term: { userId: { value: queryString, boost: 5 } } },
+            { term: { "items.productId": { value: queryString, boost: 5 } } },
+            { term: { status: { value: upperQuery, boost: 3 } } },
+            { term: { paymentStatus: { value: upperQuery, boost: 3 } } },
+
+            // Full-text match on courier and failureReason
+            {
+              multi_match: {
+                query: queryString,
+                fields: ["courier^4", "failureReason^2"],
+                type: "best_fields",
+                fuzziness: "AUTO",
+              },
+            },
+
+            // Substring wildcard matching on IDs and courier (case-insensitive)
+            {
+              wildcard: {
+                orderId: {
+                  value: sanitizedWildcard,
+                  case_insensitive: true,
+                  boost: 4,
+                },
+              },
+            },
+            {
+              wildcard: {
+                userId: {
+                  value: sanitizedWildcard,
+                  case_insensitive: true,
+                  boost: 2,
+                },
+              },
+            },
+            {
+              wildcard: {
+                "items.productId": {
+                  value: sanitizedWildcard,
+                  case_insensitive: true,
+                  boost: 2,
+                },
+              },
+            },
+            {
+              wildcard: {
+                "courier.keyword": {
+                  value: sanitizedWildcard,
+                  case_insensitive: true,
+                  boost: 2,
+                },
+              },
+            },
           ],
-          type: "best_fields",
-          fuzziness: "AUTO",
+          minimum_should_match: 1,
         },
       });
     }
