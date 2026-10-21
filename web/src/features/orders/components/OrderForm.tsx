@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/error";
+import { generateUUID } from "@/lib/utils";
 
 export default function OrderForm() {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ export default function OrderForm() {
     useCartStore();
   const { addOrder } = useOrdersStore();
 
-  const idempotencyKeyRef = useRef(crypto.randomUUID());
+  const idempotencyKeyRef = useRef(generateUUID());
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +65,7 @@ export default function OrderForm() {
 
       const newOrder = await createOrder(payload, idempotencyKeyRef.current);
 
-      idempotencyKeyRef.current = crypto.randomUUID();
+      idempotencyKeyRef.current = generateUUID();
 
       queryClient.setQueryData<Order[]>(["orders"], (oldOrders = []) => {
         return [newOrder, ...oldOrders.filter((o) => o.id !== newOrder.id)];
