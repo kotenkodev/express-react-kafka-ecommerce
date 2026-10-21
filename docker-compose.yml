@@ -287,11 +287,19 @@ services:
       - "${AUTH_SERVICE_PORT:-3006}:${AUTH_SERVICE_PORT:-3006}"
     environment:
       PORT: ${AUTH_SERVICE_PORT:-3006}
-      TRUST_PROXY: loopback,uniquelocal
+      TRUST_PROXY: ${TRUST_PROXY:-loopback,uniquelocal}
       DATABASE_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin123}@pgbouncer:6432/${POSTGRES_DB:-kafkashop}?schema=public&pgbouncer=true
       DIRECT_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin123}@postgres:5432/${POSTGRES_DB:-kafkashop}?schema=public
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-secret123}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-7d}
+      ENABLE_RATE_LIMIT: ${ENABLE_RATE_LIMIT:-false}
+      AUTH_RATE_LIMIT_PER_MINUTE: ${AUTH_RATE_LIMIT_PER_MINUTE:-120}
+      LOGIN_RATE_LIMIT_PER_MINUTE: ${LOGIN_RATE_LIMIT_PER_MINUTE:-30}
+      LOGIN_FAILURE_LIMIT: ${LOGIN_FAILURE_LIMIT:-10}
+      REGISTER_RATE_LIMIT_PER_HOUR: ${REGISTER_RATE_LIMIT_PER_HOUR:-5}
+      REFRESH_RATE_LIMIT_PER_MINUTE: ${REFRESH_RATE_LIMIT_PER_MINUTE:-30}
     volumes:
       - ./services/auth-service/src:/app/services/auth-service/src
       - ./services/auth-service/tsconfig.json:/app/services/auth-service/tsconfig.json:ro
@@ -542,9 +550,10 @@ services:
       - "${API_GATEWAY_PORT:-8000}:${API_GATEWAY_PORT:-8000}"
     environment:
       PORT: ${API_GATEWAY_PORT:-8000}
-      TRUST_PROXY: loopback,uniquelocal
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      TRUST_PROXY: ${TRUST_PROXY:-loopback,uniquelocal}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
       JWT_SECRET: ${JWT_SECRET:-secret123}
+      METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:-internal-prometheus-metrics-secret-key}
       AUTH_SERVICE_URL: http://auth-service:3006
       ORDER_SERVICE_URL: http://order-service:3001
       PRODUCT_SERVICE_URL: http://product-service:3007
