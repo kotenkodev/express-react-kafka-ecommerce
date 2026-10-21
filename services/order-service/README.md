@@ -494,11 +494,11 @@ Incoming delivery events are validated using Zod before being applied.
 
 The service supports the following status transitions:
 
-| New Status  | Allowed Previous Statuses                                          |
-| ----------- | ------------------------------------------------------------------ |
-| `PREPARING` | `PENDING`, `PAID`                                                  |
-| `SHIPPED`   | `PENDING`, `PAID`, `PREPARING`, `PACKAGING`                        |
-| `DELIVERED` | `PENDING`, `PAID`, `PREPARING`, `PACKAGING`, `SHIPPED`, `SHIPPING` |
+| New Status  | Allowed Previous Statuses             |
+| ----------- | ------------------------------------- |
+| `PREPARING` | `PENDING`, `PAID`                     |
+| `SHIPPED`   | `PENDING`, `PAID`, `PREPARING`        |
+| `DELIVERED` | `PENDING`, `PAID`, `PREPARING`, `SHIPPED` |
 
 The status update is applied only when the current order status is allowed and the incoming event timestamp is newer than the stored `statusUpdatedAt` value, or when no previous timestamp exists.
 

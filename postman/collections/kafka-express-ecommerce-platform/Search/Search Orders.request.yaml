@@ -7,7 +7,7 @@ description: |-
 
   #### Query Parameters:
   - `q` (string, optional): Full-text query string (matches order items, courier name, etc.). Alias: `query`.
-  - `status` (string, optional): Filter by order status. Accepted values: `PENDING`, `PAID`, `PREPARING`, `SHIPPED`, `DELIVERED`, `FAILED`, `CANCELED`, `payment_failed`.
+  - `status` (string, optional): Filter by order status. Accepted values: `PENDING`, `PAID`, `PREPARING`, `SHIPPED`, `DELIVERED`, `FAILED`, `payment_failed`.
   - `page` (integer, optional): Page number (default: `1`).
   - `limit` (integer, optional): Items per page (default: `10`, max: `100`).
 

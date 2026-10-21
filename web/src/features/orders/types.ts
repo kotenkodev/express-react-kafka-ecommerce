@@ -7,10 +7,7 @@ export type OrderStatus =
   | "PREPARING"
   | "SHIPPED"
   | "DELIVERED"
-  | "FAILED"
-  | "CANCELED"
-  | "PACKAGING"
-  | "SHIPPING";
+  | "FAILED";
 
 export type PaymentStatus = "PENDING" | "SUCCESS" | "FAILED";
 

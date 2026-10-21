@@ -10,15 +10,8 @@ type DatabaseStatus = Order["status"];
 
 const allowedPreviousStatuses: Record<DeliveryStage, DatabaseStatus[]> = {
   PREPARING: ["PENDING", "PAID"],
-  SHIPPED: ["PENDING", "PAID", "PREPARING", "PACKAGING"],
-  DELIVERED: [
-    "PENDING",
-    "PAID",
-    "PREPARING",
-    "PACKAGING",
-    "SHIPPED",
-    "SHIPPING",
-  ],
+  SHIPPED: ["PENDING", "PAID", "PREPARING"],
+  DELIVERED: ["PENDING", "PAID", "PREPARING", "SHIPPED"],
 };
 
 export async function applyOrderStatus(
@@ -95,9 +88,7 @@ export async function applyPaymentStatus(
     } else {
       const activeDeliveryStatuses: DatabaseStatus[] = [
         "PREPARING",
-        "PACKAGING",
         "SHIPPED",
-        "SHIPPING",
         "DELIVERED",
       ];
 
@@ -152,9 +143,7 @@ export async function applyOrderDLQ(
     const protectedStatuses: DatabaseStatus[] = [
       "PAID",
       "PREPARING",
-      "PACKAGING",
       "SHIPPED",
-      "SHIPPING",
       "DELIVERED",
     ];
 

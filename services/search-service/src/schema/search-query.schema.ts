@@ -8,7 +8,6 @@ export const ORDER_SEARCH_STATUSES = [
   "DELIVERED",
   "FAILED",
   "payment_failed",
-  "CANCELED",
 ] as const;
 
 export const searchQuerySchema = z.object({

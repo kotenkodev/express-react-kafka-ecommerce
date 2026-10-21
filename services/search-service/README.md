@@ -337,7 +337,6 @@ SHIPPED
 DELIVERED
 FAILED
 payment_failed
-CANCELED
 ```
 
 Example filtering request:

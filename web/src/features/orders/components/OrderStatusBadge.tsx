@@ -11,12 +11,6 @@ const statusColors: Record<OrderStatus, string> = {
   DELIVERED:
     "border-emerald-500/30 bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
   FAILED: "border-rose-500/30 bg-rose-500/15 text-rose-700 dark:text-rose-400",
-  CANCELED:
-    "border-slate-500/30 bg-slate-500/15 text-slate-700 dark:text-slate-300",
-  PACKAGING:
-    "border-amber-500/30 bg-amber-500/15 text-amber-700 dark:text-amber-400",
-  SHIPPING:
-    "border-amber-500/30 bg-amber-500/15 text-amber-600 dark:text-amber-400",
 };
 
 export default function OrderStatusBadge({ status }: { status: OrderStatus }) {

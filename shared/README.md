@@ -348,9 +348,6 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   FAILED
-  CANCELED
-  PACKAGING
-  SHIPPING
 }
 ```
 

@@ -28,7 +28,6 @@ const ORDER_STATUS_OPTIONS = [
   { value: "DELIVERED", label: "DELIVERED" },
   { value: "FAILED", label: "FAILED" },
   { value: "payment_failed", label: "Payment Failed" },
-  { value: "CANCELED", label: "CANCELED" },
 ];
 
 const SearchSkeletons = () => (

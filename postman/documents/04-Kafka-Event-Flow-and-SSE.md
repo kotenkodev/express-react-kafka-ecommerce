@@ -130,10 +130,9 @@ The complete set of order statuses used across the platform (PostgreSQL, Kafka e
 | `SHIPPED` | Delivery Service | Order dispatched to courier |
 | `DELIVERED` | Delivery Service | Order successfully delivered |
 | `FAILED` | Order Service / DLQ | Order failed after exhausting payment retries |
-| `CANCELED` | Order Service | Order was explicitly canceled |
 | `payment_failed` | Search Service | Elasticsearch-specific label for DLQ-routed failures |
 
-> **Search filter note:** The `status` query parameter on `GET /api/search` accepts all values above. Use `CANCELED` (uppercase) for canceled orders and `payment_failed` (lowercase) for DLQ-indexed failures.
+> **Search filter note:** The `status` query parameter on `GET /api/search` accepts all values above (`payment_failed` lowercase for DLQ-indexed failures).
 
 ---
 

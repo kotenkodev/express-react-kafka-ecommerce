@@ -415,7 +415,7 @@ async function seedSampleOrders(
   await prisma.order.create({
     data: {
       userId: user1.id,
-      status: OrderStatus.SHIPPING,
+      status: OrderStatus.SHIPPED,
       paymentStatus: PaymentStatus.SUCCESS,
       totalAmount: Number(p2.price) * 2,
       items: {
@@ -432,7 +432,7 @@ async function seedSampleOrders(
   await prisma.order.create({
     data: {
       userId: user2.id,
-      status: OrderStatus.PACKAGING,
+      status: OrderStatus.PREPARING,
       paymentStatus: PaymentStatus.SUCCESS,
       totalAmount: total3,
       items: {
